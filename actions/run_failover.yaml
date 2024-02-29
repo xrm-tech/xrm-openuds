@@ -1,0 +1,12 @@
+---
+  name: "Fail_Over"
+  runner_type: "python-script"
+  description: "Perform disaster recovery to secondary Site"
+  enabled: true
+  entry_point: "run_failover.py"
+  parameters:
+    plan_name:
+      type: "string"
+      description: "DR VDI Plan name"
+      required: true
+      default: "test"

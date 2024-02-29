@@ -1,0 +1,54 @@
+---
+  01_site_primary_url:
+    description: "Primary engine API address"
+    type: "string"
+    required: true
+    default: "https://engine1.localdomain/ovirt-engine/api"
+    secret: false
+  02_site_primary_username:
+    description: "Primary engine account username"
+    type: "string"
+    default: "admin@ovirt@internal"
+    required: true
+  03_site_primary_password:
+    description: "Primary engine account password"
+    type: "string"
+    default: "123qweASD@"
+    secret: true
+    required: true
+  04_site_secondary_url:
+    description: "Secondary engine API address"
+    type: "string"
+    required: true
+    default: "https://engine2.localdomain/ovirt-engine/api"
+    secret: false
+  05_site_secondary_username:
+    description: "Secondary engine account username"
+    type: "string"
+    default: "admin@ovirt@internal"
+    required: true
+  06_site_secondary_password:
+    description: "Secondary engine account password"
+    type: "string"
+    default: "123qweASD@"
+    secret: true
+    required: true
+  07_primary_storage:      
+    description: "Storage domains on primary site"
+    type: "string"
+    default: "nfs://192.168.122.210:/nfs_tst/"
+    required: true
+    secret: false
+  08_secondary_storage:      
+    description: "Storage domains on secondary site"
+    type: "string"
+    default: "nfs://192.168.122.210:/nfs_tst_replica/"
+    required: true
+    secret: false
+  09_additional_params:
+    description: "Optional parameters in Key1=Value1;Key2=Value2 format"
+    type: "string"
+    default: ""
+    required: false
+    secret: false
+  

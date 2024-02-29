@@ -1,0 +1,12 @@
+---
+ref: xrm_vdi
+name : xrm_vdi
+description : XRM VDI pack
+keywords:
+  - vdi
+  - xrm
+version: 1.0.1
+python_versions:
+  - "3"
+author : XRM
+email : info@x-rm.ru
