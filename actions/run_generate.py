@@ -11,10 +11,10 @@ class RunGenerate(Action):
     def get_service_pool_info(self, broker_ip, broker_auth, broker_user, broker_pwd, pool_name):
 
         vdi= apiclient.Client(
-            _host= broker_ip,
-            _auth= broker_auth,
-            _username= broker_user,
-            _password= broker_pwd
+            host= broker_ip,
+            auth= broker_auth,
+            username= broker_user,
+            password= broker_pwd
         )
 
         try:
