@@ -20,7 +20,7 @@ class RunGenerate(Action):
         try:
 
             vdi.login()
-            print(vdi.get_config())  
+            print(vdi.get_config())
             vdi.logout()
 
         except ValueError as e:
@@ -42,7 +42,7 @@ class RunGenerate(Action):
                 "broker_secondary_password": self.config['08_broker_secondary_password'], \
                 "service_pool_name": self.config['09_service_pool_name']}
 
-        get_service_pool_info(
+        self.get_service_pool_info(
             broker_ip= data['broker_primary_url'],
             broker_user= data['broker_primary_username'],
             broker_auth= data['broker_primary_auth'],
