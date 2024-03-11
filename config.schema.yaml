@@ -8,32 +8,42 @@
   02_broker_primary_username:
     description: "Primary broker account username"
     type: "string"
-    default: "admin@authenticator"
+    default: "admin"
     required: true
-  03_broker_primary_password:
+  03_broker_primary_authenticator:
+      description: "Primary broker authenticator name"
+      type: "string"
+      default: "internal"
+      required: true
+  04_broker_primary_password:
     description: "Primary broker account password"
     type: "string"
     default: "password"
     secret: true
     required: true
-  04_broker_secondary_url:
+  05_broker_secondary_url:
     description: "Secondary broker address"
     type: "string"
     required: true
     default: "https://broker2.localdomain"
     secret: false
-  05_broker_secondary_username:
+  06_broker_secondary_username:
     description: "Secondary broker account username"
     type: "string"
     default: "admin@authenticator"
     required: true
-  06_broker_secondary_password:
+  07_broker_secondary_authenticator:
+      description: "Secondary broker authenticator name"
+      type: "string"
+      default: "internal"
+      required: true
+  08_broker_secondary_password:
     description: "Secondary broker account password"
     type: "string"
     default: "password"
     secret: true
     required: true
-  07_service_pool_name:      
+  09_service_pool_name:
     description: "Service pool name on primary broker"
     type: "string"
     default: "ServicePoolName"

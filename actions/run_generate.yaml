@@ -1,7 +1,7 @@
 ---
   name: "Generate"
   runner_type: "python-script"
-  description: "Generate recovery plan configuration"
+  description: "Generate VDI recovery plan configuration"
   enabled: true
   entry_point: "run_generate.py"
   parameters:
