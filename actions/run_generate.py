@@ -17,14 +17,17 @@ class RunGenerate(Action):
             _password= broker_pwd
         )
 
-    try:
-        vdi.login()  # Подключение к брокеру
-        print(vdi.get_config())  # Вывод на экран конфигурации брокера
-        vdi.logout()  # Завершение сессии
-    except ValueError as e:
-        print('Invalid data: {}'.format(e))
-    except Exception as e:
-        raise Exception('Caught exception: {}'.format(e))
+        try:
+
+            vdi.login()
+            print(vdi.get_config())  
+            vdi.logout()
+
+        except ValueError as e:
+            print('Invalid data: {}'.format(e))
+
+        except Exception as e:
+            raise Exception('Caught exception: {}'.format(e))
 
     
     def run(self, plan_name):
