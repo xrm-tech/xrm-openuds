@@ -13,7 +13,7 @@
   03_broker_primary_authenticator:
       description: "Primary broker authenticator name"
       type: "string"
-      default: "internal"
+      default: "authenticator"
       required: true
   04_broker_primary_password:
     description: "Primary broker account password"
@@ -30,12 +30,12 @@
   06_broker_secondary_username:
     description: "Secondary broker account username"
     type: "string"
-    default: "admin@authenticator"
+    default: "admin"
     required: true
   07_broker_secondary_authenticator:
       description: "Secondary broker authenticator name"
       type: "string"
-      default: "internal"
+      default: "authenticator"
       required: true
   08_broker_secondary_password:
     description: "Secondary broker account password"
