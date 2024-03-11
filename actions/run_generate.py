@@ -24,7 +24,7 @@ class RunGenerate(Action):
     except ValueError as e:
         print('Invalid data: {}'.format(e))
     except Exception as e:
-        raise('Caught exception: {}'.format(e))
+        raise Exception('Caught exception: {}'.format(e))
 
     
     def run(self, plan_name):
