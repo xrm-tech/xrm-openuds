@@ -1,9 +1,9 @@
 ---
-  01_broker_primary_url:
-    description: "Primary broker address"
+  01_broker_primary_ip:
+    description: "Primary broker ip-address"
     type: "string"
     required: true
-    default: "https://broker1.localdomain"
+    default: "broker1.localdomain"
     secret: false
   02_broker_primary_username:
     description: "Primary broker account username"
@@ -21,11 +21,11 @@
     default: "password"
     secret: true
     required: true
-  05_broker_secondary_url:
-    description: "Secondary broker address"
+  05_broker_secondary_ip:
+    description: "Secondary broker ip-address"
     type: "string"
     required: true
-    default: "https://broker2.localdomain"
+    default: "broker2.localdomain"
     secret: false
   06_broker_secondary_username:
     description: "Secondary broker account username"
