@@ -1,35 +1,7 @@
-import base64
-import os
-import requests
-import sys
-sys.path.append('/etc/apiclient')
-import apiclient
+import ./lib/servicepool import ServicePool
 from st2common.runners.base_action import Action
 
 class RunGenerate(Action):
-
-    def get_service_pool_info(self, broker_ip, broker_auth, broker_user, broker_pwd, pool_name):
-
-        vdi= apiclient.Client(
-            host= broker_ip,
-            auth= broker_auth,
-            username= broker_user,
-            password= broker_pwd
-        )
-
-        try:
-
-            vdi.login()
-            print(vdi.get_config())
-            vdi.logout()
-
-        except ValueError as e:
-            print('Invalid data: {}'.format(e))
-
-        except Exception as e:
-            raise Exception('Caught exception: {}'.format(e))
-
-    
     def run(self, plan_name):
 
         data = {"broker_primary_ip": self.config['01_broker_primary_ip'],\
