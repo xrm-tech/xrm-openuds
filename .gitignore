@@ -88,3 +88,7 @@ ENV/
 .ropeproject
 .idea
 
+debug.py
+actions/lib/apiclient/
+actions/__init__.py
+
