@@ -5,12 +5,12 @@ import apiclient
 class Authenticator:
 
     perm_class= 'authenticators'
-    
+
     __primary_broker_connection: apiclient.Client
     __pool_groups_list:list
     __pool_assigned_services_list:list
-    __ids_list:list
     __user_ids_list:list
+    ids_list:list
     data_list:list
     groups_list:list
     users_list:list
@@ -20,7 +20,7 @@ class Authenticator:
         self.__primary_broker_connection= primary_broker
         self.__pool_groups_list= pool_groups_list
         self.__pool_assigned_services_list= pool_assigned_services
-        self.__ids_list= self.__get_all_auth_ids()        
+        self.ids_list= self.__get_all_auth_ids()        
         self.data_list= self.__get_all_auth_data()
         self.groups_list= self.__get_all_groups()
         self.__user_ids_list= self.__get_all_user_ids()
@@ -39,7 +39,7 @@ class Authenticator:
     def __get_all_auth_data(self):
         data_list=[]
 
-        for ids_elem in self.__ids_list:          
+        for ids_elem in self.ids_list:          
             auth_id= ids_elem['auth_id']
             data_list.append(self.__primary_broker_connection.get_auth(auth_id))
 
@@ -48,7 +48,7 @@ class Authenticator:
     def __get_all_groups(self):
         groups= []
 
-        for id_elem in self.__ids_list:
+        for id_elem in self.ids_list:
             group_data= self.__primary_broker_connection.get_auth_group(
                 auth_id=id_elem['auth_id'],
                 group_id=id_elem['group_id']
