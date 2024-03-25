@@ -5,6 +5,7 @@ from lib.transport import Transport
 from lib.permissions import Permissions
 from st2common.runners.base_action import Action
 
+import sys
 sys.path.append('/etc/apiclient')
 import apiclient
 
@@ -81,6 +82,6 @@ class RunGenerate(Action):
 
             except Exception as e:
                 pass
-            
+
             return self.result
 
