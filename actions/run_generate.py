@@ -4,13 +4,26 @@ from lib.authenticator import Authenticator
 from lib.transport import Transport
 from lib.permissions import Permissions
 from st2common.runners.base_action import Action
-
+import pickle
 import sys
 sys.path.append('/etc/apiclient')
 import apiclient
 
 class RunGenerate(Action):
-    result= False
+    result= False    
+
+    def __save_plan_data(self, plan:str, service_pool_param, service_provider_param, authenticator_param, transport_param, permissions_param):
+        
+        plan_data= []
+        plan_data.append({'service_pool': service_pool_param})
+        plan_data.append({'service_provider': service_provider_param})
+        plan_data.append({'authenticator': authenticator_param})
+        plan_data.append({'transport': transport_param})
+        plan_data.append({'permissions': permissions_param})
+   
+        plan_full_name= plan + '.saved_data'
+        with open(plan_full_name, 'wb') as f:
+            pickle.dump(plan_data, f)
 
     def run(self, plan_name):
         data = {"broker_primary_ip": self.config['01_broker_primary_ip'],
@@ -67,6 +80,15 @@ class RunGenerate(Action):
                 transport_param= transport
             )
             permissions.get_logs()
+
+            self.__save_plan_data(
+                plan= plan_name, 
+                service_pool_param= service_pool, 
+                service_provider_param= service_provider, 
+                authenticator_param= authenticator, 
+                transport_param= transport, 
+                permissions_param =permissions
+            )
 
             self.result= True
 
