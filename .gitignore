@@ -91,4 +91,5 @@ ENV/
 debug.py
 actions/lib/apiclient/
 actions/__init__.py
+*.saved_data
 
