@@ -22,8 +22,9 @@ class RunGenerate(Action):
         plan_data.append({'transport': transport_param})
         plan_data.append({'permissions': permissions_param})
 
-        packs_path= '/opt/stackstorm/packs/'
+        packs_path= '/opt/stackstorm/packs/saved/'
         plan_ending= '.plandata'
+        os.makedirs(os.path.dirname(packs_path), exist_ok=True)
         plan_full_name= os.path.join(packs_path, plan + plan_ending)
 
 
