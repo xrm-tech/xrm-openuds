@@ -24,7 +24,7 @@ class RunGenerate(Action):
 
         packs_path= '/opt/stackstorm/packs/'
         plan_ending= '.plandata'
-        plan_full_name= os.path.join(packs_path, plan, plan_ending)
+        plan_full_name= os.path.join(packs_path, plan + plan_ending)
 
 
         with open(plan_full_name, 'wb') as f:
