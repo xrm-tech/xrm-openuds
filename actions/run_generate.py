@@ -92,9 +92,6 @@ class RunGenerate(Action):
 
             self.result= True
 
-        except ValueError as e:
-            print('Invalid data: {}'.format(e))
-        
         except Exception as e:
             raise Exception('Caught exception: {}'.format(e))
 
@@ -103,7 +100,8 @@ class RunGenerate(Action):
                 primary_broker_connection.logout()    
 
             except Exception as e:
-                pass
+                
+                print(e)
 
             return self.result
 
