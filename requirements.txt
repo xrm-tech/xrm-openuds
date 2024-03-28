@@ -1,4 +1,4 @@
 requests
 httplib2
-pickle
+pickle-mixin
 pybase64
