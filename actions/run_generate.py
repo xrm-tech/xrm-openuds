@@ -21,7 +21,7 @@ class RunGenerate(Action):
         plan_data.append({'transport': transport_param})
         plan_data.append({'permissions': permissions_param})
    
-        plan_full_name= plan + '.saved_data'
+        plan_full_name= plan + '.plan.data'
         with open(plan_full_name, 'wb') as f:
             pickle.dump(plan_data, f)
 
