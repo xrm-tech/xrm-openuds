@@ -20,8 +20,10 @@ class RunGenerate(Action):
         plan_data.append({'authenticator': authenticator_param})
         plan_data.append({'transport': transport_param})
         plan_data.append({'permissions': permissions_param})
-   
-        plan_full_name= plan + '.plan.data'
+
+        packs_path= '/opt/stackstorm/packs/saved_openuds_plans/'
+        plan_full_name= packs_path + plan + '.plan.data'
+        
         with open(plan_full_name, 'wb') as f:
             pickle.dump(plan_data, f)
 
