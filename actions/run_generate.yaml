@@ -1,12 +1,12 @@
 ---
   name: "Generate"
   runner_type: "python-script"
-  description: "Generate VDI recovery plan configuration"
+  description: "Generate OpenUDS recovery plan configuration"
   enabled: true
   entry_point: "run_generate.py"
   parameters:
     plan_name:
       type: "string"
-      description: "DR VDI Plan name"
+      description: "DR OpenUDS Plan name"
       required: true
       default: "test"

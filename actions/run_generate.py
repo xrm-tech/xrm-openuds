@@ -49,7 +49,7 @@ class RunGenerate(Action):
 
             service_pool = ServicePool(
                 primary_broker= primary_broker_connection,
-                pool_name='Windows Server'
+                pool_name=data['service_pool_name']
             )
             service_pool.get_logs()    
 
