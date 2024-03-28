@@ -6,6 +6,7 @@ from lib.permissions import Permissions
 from st2common.runners.base_action import Action
 import pickle
 import sys
+import os
 sys.path.append('/etc/apiclient')
 import apiclient
 
@@ -21,9 +22,11 @@ class RunGenerate(Action):
         plan_data.append({'transport': transport_param})
         plan_data.append({'permissions': permissions_param})
 
-        packs_path= '/opt/stackstorm/packs/saved_openuds_plans/'
-        plan_full_name= packs_path + plan + '.plan.data'
-        
+        packs_path= '/opt/stackstorm/saved/'
+        plan_ending= '.plandata'
+        plan_full_name= os.path.join(packs_path, plan, plan_ending)
+
+
         with open(plan_full_name, 'wb') as f:
             pickle.dump(plan_data, f)
 
