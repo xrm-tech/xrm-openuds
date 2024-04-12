@@ -30,7 +30,7 @@ class RunFailOver(Action):
         with open(plan_full_name, 'rb') as f:
             plan_data_dict= pickle.load(f)
         
-        
+        print(self.__service_pool)
         self.__service_pool: ServicePool= plan_data_dict['service_pool']
         self.__service_provider: ServiceProvider= plan_data_dict['service_provider']
         self.__authenticator: Authenticator= plan_data_dict['authenticator']
