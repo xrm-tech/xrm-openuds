@@ -12,7 +12,7 @@ import apiclient
 
 
 class RunFailover(Action):
-
+    __result= False
     __service_pool:ServicePool
     __service_provider:ServiceProvider
     __authenticator:Authenticator
@@ -30,13 +30,17 @@ class RunFailover(Action):
             plan_data_dict= pickle.load(f)
         
         
-        self.__service_pool= plan_data_dict['service_pool']
-        self.__service_provider= plan_data_dict['service_provider']
-        self.__authenticator= plan_data_dict['authenticator']
-        self.__transport= plan_data_dict['transport']
-        self.__permissions= plan_data_dict['permissions']
+        self.__service_pool: ServicePool= plan_data_dict['service_pool']
+        self.__service_provider: ServiceProvider= plan_data_dict['service_provider']
+        self.__authenticator: Authenticator= plan_data_dict['authenticator']
+        self.__transport: Transport= plan_data_dict['transport']
+        self.__permissions: Permissions= plan_data_dict['permissions']
 
-        
+        self.__service_pool.get_logs()
+        self.__service_provider.get_logs()
+        self.__authenticator.get_logs()
+        self.__transport.get_logs()
+        self.__permissions.get_logs()
         
 
     def run(self, plan_name):
@@ -44,6 +48,7 @@ class RunFailover(Action):
         try:
 
             self.__load_plan_data(plan= plan_name)
+            self.__result= True
             
 
 
@@ -52,11 +57,11 @@ class RunFailover(Action):
 
         finally:
             try:
-                primary_broker_connection.logout()    
+                #primary_broker_connection.logout()    
                 pass
 
             except Exception as e:
                 
                 print(e)
 
-            return self.result
+            return self.__result
