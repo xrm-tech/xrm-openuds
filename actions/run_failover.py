@@ -25,6 +25,7 @@ class RunFailOver(Action):
         plan_ending= '.plandata'
         os.makedirs(os.path.dirname(packs_path), exist_ok=True)
         plan_full_name= os.path.join(packs_path, plan + plan_ending)
+        print(plan_full_name)
 
         with open(plan_full_name, 'rb') as f:
             plan_data_dict= pickle.load(f)
@@ -45,10 +46,11 @@ class RunFailOver(Action):
 
     def run(self, plan_name):
 
-        try:
+        self.__result= True
 
+        try:
             self.__load_plan_data(plan= plan_name)
-            self.__result= True
+            
             
 
 
