@@ -11,7 +11,7 @@ sys.path.append('/etc/apiclient')
 import apiclient
 
 
-class RunFailover(Action):
+class RunFailOver(Action):
     __result= False
     __service_pool:ServicePool
     __service_provider:ServiceProvider
