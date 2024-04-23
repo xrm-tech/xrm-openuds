@@ -1,9 +1,9 @@
-from st2common.runners.base_action import Action
+import pickle
 import sys, os
 sys.path.append(os.path.abspath('.'))
-from vdi import *
-import pickle
 sys.path.append('/etc/apiclient')
+from st2common.runners.base_action import Action
+from vdi import *
 import apiclient
 
 
