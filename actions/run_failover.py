@@ -1,15 +1,10 @@
-from lib.servicepool import ServicePool
-from lib.serviceprovider import ServiceProvider
-from lib.authenticator import Authenticator
-from lib.transport import Transport
-from lib.permissions import Permissions
-from st2common.runners.base_action import Action
+from actions.st2common.runners.base_action import Action
 import pickle
-import sys
-import os
-sys.path.append('/etc/apiclient')
-import apiclient
-
+import sys, os
+#sys.path.append('/etc/apiclient')
+#import apiclient
+sys.path.append(os.path.abspath('.'))
+from vdi import *
 
 class RunFailOver(Action):
     __result= False
@@ -18,19 +13,19 @@ class RunFailOver(Action):
     __authenticator:Authenticator
     __transport:Transport
     __permissions:Permissions
+    packs_path= '/opt/stackstorm/packs/saved/'
 
     def __load_plan_data(self, plan):
-        
-        packs_path= '/opt/stackstorm/packs/saved/'
+
         plan_ending= '.plandata'
-        os.makedirs(os.path.dirname(packs_path), exist_ok=True)
-        plan_full_name= os.path.join(packs_path, plan + plan_ending)
+        os.makedirs(os.path.dirname(self.packs_path), exist_ok=True)
+        plan_full_name= os.path.join(self.packs_path, plan + plan_ending)
         print(plan_full_name)
 
         with open(plan_full_name, 'rb') as f:
-            plan_data_dict1= pickle.load(f)
+            plan_data_dict={}
+            plan_data_dict= pickle.load(f)
         
-        plan_data_dict= plan_data_dict1[0]
         self.__service_pool: ServicePool= plan_data_dict['service_pool']
         self.__service_provider: ServiceProvider= plan_data_dict['service_provider']
         self.__authenticator: Authenticator= plan_data_dict['authenticator']

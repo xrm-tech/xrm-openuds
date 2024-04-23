@@ -1,31 +1,29 @@
-from lib.servicepool import ServicePool
-from lib.serviceprovider import ServiceProvider
-from lib.authenticator import Authenticator
-from lib.transport import Transport
-from lib.permissions import Permissions
-from st2common.runners.base_action import Action
+from actions.st2common.runners.base_action import Action
+import sys, os
+sys.path.append(os.path.abspath('.'))
+from vdi import *
 import pickle
-import sys
-import os
 sys.path.append('/etc/apiclient')
 import apiclient
 
+
 class RunGenerate(Action):
-    result= False    
+    __result= False
+    packs_path= '/opt/stackstorm/packs/saved/'    
 
     def __save_plan_data(self, plan:str, service_pool_param, service_provider_param, authenticator_param, transport_param, permissions_param):
         
-        plan_data= []
-        plan_data.append({'service_pool': service_pool_param})
-        plan_data.append({'service_provider': service_provider_param})
-        plan_data.append({'authenticator': authenticator_param})
-        plan_data.append({'transport': transport_param})
-        plan_data.append({'permissions': permissions_param})
+        plan_data= {
+            'service_pool': service_pool_param,
+            'service_provider': service_provider_param,
+            'authenticator': authenticator_param,
+            'transport': transport_param,
+            'permissions': permissions_param
+        }
 
-        packs_path= '/opt/stackstorm/packs/saved/'
         plan_ending= '.plandata'
-        os.makedirs(os.path.dirname(packs_path), exist_ok=True)
-        plan_full_name= os.path.join(packs_path, plan + plan_ending)
+        os.makedirs(os.path.dirname(self.packs_path), exist_ok=True)
+        plan_full_name= os.path.join(self.packs_path, plan + plan_ending)
 
 
         with open(plan_full_name, 'wb') as f:
@@ -96,7 +94,7 @@ class RunGenerate(Action):
                 permissions_param =permissions
             )
 
-            self.result= True
+            self.__result= True
 
         except Exception as e:
             raise Exception('Caught exception: {}'.format(e))
@@ -109,5 +107,5 @@ class RunGenerate(Action):
                 
                 print(e)
 
-            return self.result
+            return self.__result
 
