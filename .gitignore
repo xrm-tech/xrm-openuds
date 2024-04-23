@@ -94,4 +94,5 @@ vdi/apiclient
 .saved/
 actions/st2common/
 .github/
+st2common/
 

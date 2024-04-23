@@ -1,4 +1,4 @@
-from actions.st2common.runners.base_action import Action
+from st2common.runners.base_action import Action
 import sys, os
 sys.path.append(os.path.abspath('.'))
 from vdi import *
