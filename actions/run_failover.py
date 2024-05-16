@@ -2,11 +2,13 @@ import pickle
 import sys, os
 sys.path.append(os.path.abspath('.'))
 sys.path.append('/opt/stackstorm/packs/xrm_openuds/')
+sys.path.append('/etc/apiclient')
 from st2common.runners.base_action import Action
 from vdi import *
+import apiclient
 
 class RunFailOver(Action):
-    __result= False
+    __result= None
     __service_pool:ServicePool
     __service_provider:ServiceProvider
     __authenticator:Authenticator
@@ -37,6 +39,10 @@ class RunFailOver(Action):
         self.__transport.get_logs()
         self.__permissions.get_logs()
         
+    def __send_loaded_data(self):
+        pass
+        
+            
 
     def run(self, plan_name):
 
@@ -44,7 +50,7 @@ class RunFailOver(Action):
 
         try:
             self.__load_plan_data(plan= plan_name)
-            
+            self.__send_loaded_data()
             
 
 

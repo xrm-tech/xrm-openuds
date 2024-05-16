@@ -16,7 +16,7 @@ def generate():
         '06_broker_secondary_username':'qq',
         '07_broker_secondary_authenticator':'qq',
         '08_broker_secondary_password':'qq',
-        '09_service_pool_name':'Windows Server'
+        '09_service_pool_name':';Windows Server;'
     }
     runGenerate.packs_path=r'C:\Users\Anakim\Documents\xrm-vdi-pack\.saved'
     runGenerate.run(plan_name= 'test2204')
@@ -33,4 +33,4 @@ def failover():
  #=========================================
 
 generate()
-failover()
+#failover()

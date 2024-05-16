@@ -9,8 +9,55 @@ import apiclient
 
 
 class RunGenerate(Action):
-    __result= False
+    __result= None
     packs_path= '/opt/stackstorm/packs/saved/'    
+
+    def __get_data_by_pool_name (self, primary_broker_connection_param, service_name):
+        
+        service_pool = ServicePool(
+            primary_broker= primary_broker_connection_param,
+            pool_name= service_name
+        )
+        service_pool.get_logs()    
+
+        service_provider = ServiceProvider(
+            primary_broker= primary_broker_connection_param,
+            service_pool_data= service_pool.data_list
+        )            
+        service_provider.get_logs()
+
+        authenticator = Authenticator(
+            primary_broker= primary_broker_connection_param,
+            pool_groups_list= service_pool.groups_list,
+            pool_assigned_services= service_pool.assigned_services_list
+        )
+        authenticator.get_logs()
+
+        transport = Transport(
+            primary_broker= primary_broker_connection_param,
+            pool_transports_list= service_pool.transports_list
+        )
+        transport.get_logs()
+
+        permissions = Permissions(
+            primary_broker= primary_broker_connection_param,
+            service_pool_param= service_pool,
+            service_provider_param= service_provider,
+            authenticator_param= authenticator,
+            transport_param= transport
+        )
+        permissions.get_logs()
+
+        service_data= {
+            'service_name': service_name,
+            'service_pool': service_pool,
+            'service_provider': service_provider,
+            'authenticator': authenticator,
+            'transport': transport,
+            'permissions': permissions
+        }
+
+        return service_data
 
     def __save_plan_data(self, plan:str, service_pool_param, service_provider_param, authenticator_param, transport_param, permissions_param):
         
@@ -41,7 +88,7 @@ class RunGenerate(Action):
                 "broker_secondary_password": self.config['08_broker_secondary_password'],
                 "service_pool_name": self.config['09_service_pool_name']}
 
-        primary_broker_connection = apiclient.Client(
+        broker_connection = apiclient.Client(
             host=data['broker_primary_ip'],
             username=data['broker_primary_username'],
             auth=data['broker_primary_auth'],
@@ -50,59 +97,50 @@ class RunGenerate(Action):
 
         try: 
        
-            primary_broker_connection.login()
+            broker_connection.login()
+            service_pools_str= data['service_pool_name']
 
-            service_pool = ServicePool(
-                primary_broker= primary_broker_connection,
-                pool_name=data['service_pool_name']
-            )
-            service_pool.get_logs()    
+            if (service_pools_str[-1] == ';'):
+                service_pools_str= service_pools_str[:-1]
 
-            service_provider = ServiceProvider(
-                primary_broker= primary_broker_connection,
-                service_pool_data= service_pool.data_list
-            )            
-            service_provider.get_logs()
+            service_pools_names_list= service_pools_str.split(";") 
+            service_pools_data_list=[]
 
-            authenticator = Authenticator(
-                primary_broker= primary_broker_connection,
-                pool_groups_list= service_pool.groups_list,
-                pool_assigned_services= service_pool.assigned_services_list
-            )
-            authenticator.get_logs()
+            for service_pool_name in service_pools_names_list:
 
-            transport = Transport(
-                primary_broker= primary_broker_connection,
-                pool_transports_list= service_pool.transports_list
-            )
-            transport.get_logs()
+                try:
 
-            permissions = Permissions(
-                primary_broker= primary_broker_connection,
-                service_pool_param= service_pool,
-                service_provider_param= service_provider,
-                authenticator_param= authenticator,
-                transport_param= transport
-            )
-            permissions.get_logs()
+                    service_pool_data= self.__get_data_by_pool_name(
+                        service_name= service_pool_name,
+                        primary_broker_connection_param= broker_connection,
+                    )
+                    if service_pool_data:
+                       
+                        service_pools_data_list.append(service_pool_data)         
 
-            self.__save_plan_data(
-                plan= plan_name, 
-                service_pool_param= service_pool, 
-                service_provider_param= service_provider, 
-                authenticator_param= authenticator, 
-                transport_param= transport, 
-                permissions_param =permissions
-            )
 
-            self.__result= True
+
+                except Exception as e:
+                
+                    print(e)
+
+            # self.__save_plan_data(
+            #     plan= plan_name, 
+            #     service_pool_param= service_pool, 
+            #     service_provider_param= service_provider, 
+            #     authenticator_param= authenticator, 
+            #     transport_param= transport, 
+            #     permissions_param =permissions,
+            # )
+
+            # self.__result= True
 
         except Exception as e:
             raise Exception('Caught exception: {}'.format(e))
 
         finally:
             try:
-                primary_broker_connection.logout()    
+                broker_connection.logout()    
 
             except Exception as e:
                 
