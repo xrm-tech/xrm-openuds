@@ -5,7 +5,7 @@ import apiclient
 class ServicePool:
     
     perm_class= 'servicespools'
-    
+    name:str
     id:str    
     data_list:dict       
     groups_list:list
@@ -15,6 +15,7 @@ class ServicePool:
 
     def __init__(self, primary_broker, pool_name):
         
+        self.name= pool_name
         self.id= primary_broker.get_pool_id(pool_name)
         self.data_list= primary_broker.get_pool(self.id)
         self.groups_list= primary_broker.list_pool_groups(self.id)
