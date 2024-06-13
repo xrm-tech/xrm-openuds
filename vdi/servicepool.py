@@ -7,7 +7,7 @@ class ServicePool:
     perm_class= 'servicespools'
     name:str
     id:str    
-    data_list:dict       
+    data_dict:dict       
     groups_list:list
     transports_list:list
     assigned_services_list:list
@@ -17,7 +17,7 @@ class ServicePool:
         
         self.name= pool_name
         self.id= primary_broker.get_pool_id(pool_name)
-        self.data_list= primary_broker.get_pool(self.id)
+        self.data_dict= primary_broker.get_pool(self.id)
         self.groups_list= primary_broker.list_pool_groups(self.id)
         self.transports_list= primary_broker.list_pool_transports(self.id)         
         __unfiltered_assigned_services_list= primary_broker.list_pool_assigned_services(self.id)                      
@@ -33,7 +33,7 @@ class ServicePool:
     def get_logs(self):
 
         print('ServicePool [ id ]: ', self.id , '\n')
-        print('ServicePool [ data ]: ', self.data_list, '\n')
+        print('ServicePool [ data ]: ', self.data_dict, '\n')
         print('ServicePool [ groups ]: ', self.groups_list, '\n')
         print('ServicePool [ transports ]: ', self.transports_list, '\n')
         print('ServicePool [ assigned_services ]: ', self.assigned_services_list, '\n')
