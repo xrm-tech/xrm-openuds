@@ -230,9 +230,9 @@ class RunFailOver(Action):
                                 'allowMacMSRDC': trans.get('allowMacMSRDC'),
                                 'customParametersMAC': trans.get('customParametersMAC'),
                             }
-                            not_none_auth_params= {k:v for k, v in params.items() if v is not None}
-                            print(not_none_auth_params) #TODO:TEST
-                            created_transport= dst_broker_connection.create_rdpdirect_transport(**not_none_auth_params)                            
+                            not_none_transport_params= {k:v for k, v in params.items() if v is not None}
+                            print(not_none_transport_params) #TODO:TEST
+                            created_transport= dst_broker_connection.create_rdpdirect_transport(**not_none_transport_params)                            
                             if (created_transport==''):
                                 print(f'\n Created {trans_name_str} succesfully')
                             else:
