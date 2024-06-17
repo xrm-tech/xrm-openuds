@@ -72,8 +72,8 @@ class RunFailOver(Action):
                     print(f'\n{created_provider_service}')              
                     
                     created_service_id= created_provider_service['id']
-                    name= service_pool.data_dict['name']  
-                    print(f'\nCreating service pool {name}')
+                    servicepool_name= service_pool.data_dict['name']  
+                    print(f'\nCreating service pool {servicepool_name}')
                     
                     params= {
                         'name': service_pool.data_dict['name'],
@@ -156,7 +156,7 @@ class RunFailOver(Action):
 
                         else:
                             supported= False
-                            print(f'\n Warning: skipping unsupported authenticator {auth_name_str}')
+                            print(f'\nWarning: skipping unsupported authenticator {auth_name_str}')
 
                         if (supported):
                             '''
@@ -174,13 +174,14 @@ class RunFailOver(Action):
                                         'comments': group_data.get('comments'),
                                         'state': group_data.get('state'),
                                         'meta_if_any': group_data.get('meta_if_any'),
-                                        'pools': [str(created_service_pool.get('id'))]       
-                                    }
-                                    not_none_auth_params= {k:v for k, v in params.items() if v is not None}
-                                    created_auth_group= dst_broker_connection.create_auth_group(**not_none_auth_params)    
-                                    
+                                        'pools': str(created_service_pool.get('id'))    
+                                    }                                  
+                                    not_none_group_params= {k:v for k, v in params.items() if v is not None}
+                                    not_none_group_params['pools']= [not_none_group_params['pools']]
+                                    created_auth_group= dst_broker_connection.create_auth_group(**not_none_group_params)    
+                                    group_name= group_data.get('name')
                                     if (created_auth_group==''):
-                                        print(f'\n Created {auth_name_str} succesfully')
+                                        print(f'\n Created {group_name} group succesfully')
                                     else:
                                         print(f'\n{created_auth_group}')
                                 #TODO: мануальное добавление пользователей. Скорее всего требует реворка в authentificator.py 
@@ -198,6 +199,7 @@ class RunFailOver(Action):
                             params= {
                                 'name': trans.get('name'),
                                 'type': trans.get('type'),
+                                'pools': created_service_pool.get('id'),
                                 'useEmptyCreds': trans.get('useEmptyCreds'),
                                 'fixedName': trans.get('fixedName'),
                                 'fixedPassword': trans.get('fixedPassword'),
@@ -229,16 +231,17 @@ class RunFailOver(Action):
                                 'allowMacMSRDC': trans.get('allowMacMSRDC'),
                                 'customParametersMAC': trans.get('customParametersMAC'),
                             }
-                            not_none_transport_params= {k:v for k, v in params.items() if v is not None}
+                            not_none_transport_params= {k:str(v) for k, v in params.items() if v is not None}
+                            not_none_transport_params['pools']= [not_none_transport_params['pools']]
+
                             print(not_none_transport_params) #TODO:TEST
-                            created_transport= dst_broker_connection.create_rdpdirect_transport(**not_none_transport_params)                            
-                            if (created_transport==''):
-                                print(f'\n Created {trans_name_str} succesfully')
-                            else:
-                                print(f'\n{created_transport}')
+                            created_transport= dst_broker_connection.create_rdpdirect_transport(**not_none_transport_params)                                                   
+                            print(f'\n{created_transport}\nCreated {trans_name_str} succesfully.')
 
                         else:
-                            print(f'\n Warning: skipping unsupported transport {trans_name_str}')
+                            print(f'\nWarning: skipping unsupported transport {trans_name_str}')
+
+                        #TODO: permissions
 
                             
             except KeyError as k:                
