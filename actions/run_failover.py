@@ -192,7 +192,6 @@ class RunFailOver(Action):
                     
                     #TODO: добавить туннельный rdp
                     for trans in transport.data:
-                        supported= True
                         trans_name_str= str(trans['name'])
                         
                         if (trans['type']=='RDPTransport'):
@@ -239,7 +238,6 @@ class RunFailOver(Action):
                                 print(f'\n{created_transport}')
 
                         else:
-                            supported= False
                             print(f'\n Warning: skipping unsupported transport {trans_name_str}')
 
                             
