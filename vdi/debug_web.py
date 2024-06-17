@@ -30,5 +30,5 @@ def failover():
 
  #=========================================
 
-#generate()
+generate()
 failover()

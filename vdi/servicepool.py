@@ -32,7 +32,7 @@ class ServicePool:
            
     def get_logs(self):
 
-        print('ServicePool [ id ]: ', self.id , '\n')
+        print('ServicePool [ id ]: ', self.id, '\n')
         print('ServicePool [ data ]: ', self.data_dict, '\n')
         print('ServicePool [ groups ]: ', self.groups_list, '\n')
         print('ServicePool [ transports ]: ', self.transports_list, '\n')

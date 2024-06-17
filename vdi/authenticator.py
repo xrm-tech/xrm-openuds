@@ -26,7 +26,6 @@ class Authenticator:
         self.__user_ids_list= self.__get_all_user_ids()
         self.users_list= self.__get_all_users()
 
-    #TODO: exclude int db data ???
     def __get_all_auth_ids(self):
         auth_id_list= []
         
@@ -53,7 +52,7 @@ class Authenticator:
                 auth_id=id_elem['auth_id'],
                 group_id=id_elem['group_id']
             )
-            groups.append(group_data)
+            groups.append({str(id_elem['auth_id']):group_data})
         
         return groups
     

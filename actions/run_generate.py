@@ -33,7 +33,7 @@ class RunGenerate(Action):
 
         service_provider = ServiceProvider(
             primary_broker= src_broker_connection_param,
-            service_pool_data= service_pool.data_list
+            service_pool_data= service_pool.data_dict
         )            
         service_provider.get_logs()
 
