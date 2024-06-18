@@ -192,6 +192,7 @@ class RunFailOver(Action):
                     print(f'\nCreating transports') 
                     
                     #TODO: добавить туннельный rdp
+                    print(transport)
                     for trans in transport.data:
                         trans_name_str= str(trans['name'])
                         

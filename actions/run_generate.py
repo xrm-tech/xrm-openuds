@@ -23,41 +23,41 @@ class RunGenerate(Action):
                                  dst_broker_auth,
                                  dst_broker_user,
                                  dst_broker_pwd, 
-                                 service_name):
+                                 sn):
         
-        service_pool = ServicePool(
+        spl = ServicePool(
             primary_broker= src_broker_connection_param,
-            pool_name= service_name
+            pool_name= sn
         )
-        service_pool.get_logs()    
+        spl.get_logs()    
 
-        service_provider = ServiceProvider(
+        spr = ServiceProvider(
             primary_broker= src_broker_connection_param,
-            service_pool_data= service_pool.data_dict
+            service_pool_data= spl.data_dict
         )            
-        service_provider.get_logs()
+        spr.get_logs()
 
-        authenticator = Authenticator(
+        a = Authenticator(
             primary_broker= src_broker_connection_param,
-            pool_groups_list= service_pool.groups_list,
-            pool_assigned_services= service_pool.assigned_services_list
+            pool_groups_list= spl.groups_list,
+            pool_assigned_services= spl.assigned_services_list
         )
-        authenticator.get_logs()
+        a.get_logs()
 
-        transport = Transport(
+        t = Transport(
             primary_broker= src_broker_connection_param,
-            pool_transports_list= service_pool.transports_list
+            pool_transports_list= spl.transports_list
         )
-        transport.get_logs()
+        t.get_logs()
 
-        permissions = Permissions(
+        p = Permissions(
             primary_broker= src_broker_connection_param,
-            service_pool_param= service_pool,
-            service_provider_param= service_provider,
-            authenticator_param= authenticator,
-            transport_param= transport
+            service_pool_param= spl,
+            service_provider_param= spr,
+            authenticator_param= a,
+            transport_param= t
         )
-        permissions.get_logs()
+        p.get_logs()
 
         service_data= {
             'src_broker_ip': src_broker_ip,
@@ -70,12 +70,12 @@ class RunGenerate(Action):
             'dst_broker_auth': dst_broker_auth,            
             'dst_broker_pwd': dst_broker_pwd, 
 
-            'service_name': service_name,
-            'service_pool': service_pool,
-            'service_provider': service_provider,
-            'authenticator': authenticator,
-            'transport': transport,
-            'permissions': permissions
+            'service_name': sn,
+            'service_pool': spl,
+            'service_provider': spr,
+            'authenticator': a,
+            'transport': t,
+            'permissions': p
         }
 
         return service_data
@@ -118,7 +118,7 @@ class RunGenerate(Action):
 
                     print(f'\n\nTrying to get data from broker for "{service_pool_name}" plan name\n\n')    
                     service_pool_data= self.__get_data_by_pool_name(
-                        service_name= service_pool_name,
+                        sn= service_pool_name,
                         src_broker_connection_param= src_broker_connection,
                         src_broker_ip= self.config['01_broker_primary_ip'],
                         src_broker_user= self.config['02_broker_primary_username'],

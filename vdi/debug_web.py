@@ -19,16 +19,16 @@ def generate():
         '09_service_pool_name':'Windows Server;Windows Static Multiple'
     }
     runGenerate.packs_path=r'C:\Users\Anakim\Documents\xrm-vdi-pack\.saved'
-    runGenerate.run(plan_name= 'test22041')
+    runGenerate.run(plan_name= '1')
 
 
 def failover():
 
     runFailOver= RunFailOver()
     runFailOver.packs_path=r'C:\Users\Anakim\Documents\xrm-vdi-pack\.saved'
-    runFailOver.run(plan_name= 'test22041')
+    runFailOver.run(plan_name= '1')
 
  #=========================================
 
 generate()
-failover()
+#failover()
