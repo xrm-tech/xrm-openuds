@@ -2,7 +2,7 @@ import pickle
 import sys, os
 sys.path.append(os.path.abspath('.'))
 sys.path.append('/opt/stackstorm/packs/xrm_openuds/')
-sys.path.append('/etc/apiclient')
+sys.path.append('/var/apiclient')
 from st2common.runners.base_action import Action
 from vdi import *
 import apiclient

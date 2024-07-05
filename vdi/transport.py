@@ -1,5 +1,5 @@
 import sys
-sys.path.append('/etc/apiclient')
+sys.path.append('/var/apiclient')
 import apiclient
 
 class Transport:
