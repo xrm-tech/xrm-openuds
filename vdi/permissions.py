@@ -1,5 +1,5 @@
 import sys
-sys.path.append('/var/apiclient')
+sys.path.append('/opt/stackstorm/packs/xrm_openuds/')
 import apiclient
 
 class Permissions:
