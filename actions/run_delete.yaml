@@ -2,7 +2,7 @@
   name: "Delete"
   runner_type: "python-script"
   description: "Delete recovery plan configuration"
-  enabled: true
+  enabled: false
   entry_point: "run_delete.py"
   parameters:
     plan_name:

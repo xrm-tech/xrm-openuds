@@ -10,3 +10,8 @@
       description: "DR OpenUDS Plan name"
       required: true
       default: "test"
+
+    timeout:
+      type: "integer"
+      description: "Action timeout in seconds. Action will get killed if it doesn't finish in timeout seconds. Default is 24 hours (eq 86400)."
+      default: 86400
