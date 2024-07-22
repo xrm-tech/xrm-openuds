@@ -4,22 +4,22 @@ import requests
 import sys
 from st2common.runners.base_action import Action
 
-from lib.xrmcontroller import XRMBaseAction
 
-__all__ = [
-    'RunCmd'
-]
-CONTROLLER_ADDRESS = "http://st2:459Qdr_@xrm-controller:8080/ovirt/delete/"
+class RunDelete(Action):
 
-class RunDelete(XRMBaseAction):
+    plan_ending = '.plandata'
+    packs_path = '/opt/stackstorm/packs/saved/'
 
     def run(self, plan_name):
-        req = self.session.get(CONTROLLER_ADDRESS+plan_name)
-        print("status", req.status_code)
-        print(req.text)
 
-        if req.status_code == 200:
+        plan_full_path = os.path.join(self.packs_path, plan_name + self.plan_ending)
+
+        try:
+            os.remove(plan_full_path)
+            print(f'Successfully removed {plan_full_path}')
             return True
-        else:
-            sys.exit(1)
+
+        except OSError as error:
+            print(error)
+            print("File path can not be removed... Skipping!")
             return False

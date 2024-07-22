@@ -1,4 +1,7 @@
 import sys, os
+
+from actions.run_delete import RunDelete
+
 sys.path.append(os.path.abspath('.'))
 from actions import *
 
@@ -30,5 +33,13 @@ def failover():
 
  #=========================================
 
-generate()
+
+def delete():
+
+    runDelete= RunDelete()
+    runDelete.packs_path=r'C:\Users\Anakim\Documents\xrm-vdi-pack\.saved'
+    runDelete.run(plan_name='1')
+
+#generate()
 #failover()
+delete()
