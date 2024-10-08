@@ -25,36 +25,36 @@ class RunGenerate(Action):
                                  sn):
         
         spl = ServicePool(
-            primary_broker= src_broker_connection_param,
-            pool_name= sn
+            primary_broker=src_broker_connection_param,
+            pool_name=sn
         )
         spl.get_logs()    
 
         spr = ServiceProvider(
-            primary_broker= src_broker_connection_param,
-            service_pool_data= spl.data_dict
-        )            
+            primary_broker=src_broker_connection_param,
+            service_pool_data=spl.data_dict
+        )
         spr.get_logs()
 
         a = Authenticator(
-            primary_broker= src_broker_connection_param,
-            pool_groups_list= spl.groups_list,
-            pool_assigned_services= spl.assigned_services_list
+            primary_broker=src_broker_connection_param,
+            pool_groups_list=spl.groups_list,
+            pool_assigned_services=spl.assigned_services_list
         )
         a.get_logs()
 
         t = Transport(
-            primary_broker= src_broker_connection_param,
-            pool_transports_list= spl.transports_list
+            primary_broker=src_broker_connection_param,
+            pool_transports_list=spl.transports_list
         )
         t.get_logs()
 
         p = Permissions(
-            primary_broker= src_broker_connection_param,
-            service_pool_param= spl,
-            service_provider_param= spr,
-            authenticator_param= a,
-            transport_param= t
+            primary_broker=src_broker_connection_param,
+            service_pool_param=spl,
+            service_provider_param=spr,
+            authenticator_param=a,
+            transport_param=t
         )
         p.get_logs()
 

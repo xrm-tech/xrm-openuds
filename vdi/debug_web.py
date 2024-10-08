@@ -19,7 +19,7 @@ def generate():
         '06_broker_secondary_username':'root',
         '07_broker_secondary_authenticator':'admin',
         '08_broker_secondary_password':'udsmam0',
-        '09_service_pool_name':'Windows Server;Windows Static Multiple'
+        '09_service_pool_name':'Windows Static Multiple;Windows Static Multiple'
     }
     runGenerate.packs_path=r'C:\Users\Anakim\Documents\xrm-vdi-pack\.saved'
     runGenerate.run(plan_name= '1')
@@ -40,6 +40,6 @@ def delete():
     runDelete.packs_path=r'C:\Users\Anakim\Documents\xrm-vdi-pack\.saved'
     runDelete.run(plan_name='1')
 
-#generate()
-#failover()
-delete()
+generate()
+failover()
+#delete()

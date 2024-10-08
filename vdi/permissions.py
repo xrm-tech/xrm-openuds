@@ -24,7 +24,8 @@ class Permissions:
         
         self.service_provider_service= primary_broker.get_permissions(
             cls= service_provider_param.service_perm_class,
-            uuid= service_provider_param.service_dict['id']
+            uuid= service_provider_param.base_services_list[0]['id'] #TODO: Rework, учет нескольких базовых сервисов,
+            #сейчас просто заглушка, берем первый из списка. А надо обрабатывать каждый элемент
         )
 
         self.__get_all_auth_perm(
@@ -40,7 +41,7 @@ class Permissions:
     def __get_all_auth_perm(self, broker_connection, authenticator):
         self.authenticators=[]
         
-        for auth_id in authenticator.ids_list:
+        for auth_id in authenticator.auths_list:
 
             auth_perm= broker_connection.get_permissions(
                 cls= authenticator.perm_class,
@@ -55,8 +56,8 @@ class Permissions:
         for id in transport.ids_list:
 
             trans_perm= broker_connection.get_permissions(
-                cls= transport.perm_class,
-                uuid= id
+                cls=transport.perm_class,
+                uuid=id
             )
 
             trans_dct= {id:trans_perm}
@@ -64,8 +65,8 @@ class Permissions:
 
     def get_logs(self):
 
-        print('Permissions [ service_pool ]: ', self.service_pool , '\n')
-        print('Permissions [ service_provider ]: ', self.service_provider , '\n')
-        print('Permissions [ service_provider_service ]: ', self.service_provider_service , '\n')
-        print('Permissions [ authenticator ]: ', self.authenticators , '\n')
-        print('Permissions [ transport ]: ', self.transports , '\n')    
+        print('Permissions [ service_pool ]: ', self.service_pool, '\n')
+        print('Permissions [ service_provider ]: ', self.service_provider, '\n')
+        print('Permissions [ service_provider_service ]: ', self.service_provider_service, '\n')
+        print('Permissions [ authenticator ]: ', self.authenticators, '\n')
+        print('Permissions [ transport ]: ', self.transports, '\n')
