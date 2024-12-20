@@ -1,6 +1,5 @@
 import pickle
 import sys, os
-sys.path.append(os.path.abspath('.'))
 from vdi import *
 
 def read_data(plan,packs_path):

@@ -1,5 +1,5 @@
 import sys
-sys.path.append('/opt/stackstorm/packs/xrm_openuds/')
+
 import apiclient
 
 class ServiceProvider:

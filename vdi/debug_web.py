@@ -2,7 +2,6 @@ import sys, os
 
 from actions.run_delete import RunDelete
 
-sys.path.append(os.path.abspath('.'))
 from actions import *
 
 
