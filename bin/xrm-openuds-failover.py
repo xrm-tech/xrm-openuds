@@ -6,7 +6,6 @@ import sys, os
 sys.path.append('/opt/stackstorm/packs/xrm_openuds/')
 
 from vdi import Failover
-from apiclient import Client
 
 # TODO: cleanup from hardcoded path ?
 packs_path= '/opt/stackstorm/packs/saved/'    
