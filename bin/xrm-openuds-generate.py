@@ -5,7 +5,6 @@ import yaml
 # TODO: cleanup from hardcoded path ?
 sys.path.append('/opt/stackstorm/packs/xrm_openuds/')
 from plan import Generate
-import apiclient
 
 # TODO: cleanup from hardcoded path ?
 packs_path= '/opt/stackstorm/packs/saved/'    

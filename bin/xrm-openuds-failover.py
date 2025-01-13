@@ -5,7 +5,7 @@ import sys, os
 # TODO: cleanup from hardcoded path ?
 sys.path.append('/opt/stackstorm/packs/xrm_openuds/')
 
-from vdi import Failover
+from plan import Failover
 
 # TODO: cleanup from hardcoded path ?
 packs_path= '/opt/stackstorm/packs/saved/'    
