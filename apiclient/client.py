@@ -24,7 +24,7 @@ class Client:
         self._auth = auth
         self._username = username
         self._password = password
-        self._rest_url = 'http://{}/uds/rest/'.format(self._host)
+        self._rest_url = 'https://{}/uds/rest/'.format(self._host)
 
     def _request(self, endpoint: str, method: str = 'GET', body: str = ''):
         h = Http(disable_ssl_certificate_validation=True)
