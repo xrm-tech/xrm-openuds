@@ -28,6 +28,7 @@ def main():
     config = None
     with open(args.config, 'r') as stream:
         config = yaml.safe_load(stream)
+    print(config)
 
     if Generate.run(config, packs_path, args.name):
         sys.exit(0)

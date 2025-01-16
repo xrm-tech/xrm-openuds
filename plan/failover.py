@@ -5,7 +5,7 @@ from vdi import *
 from apiclient import Client
 
 
-class Failover:
+class FailOver:
     def __send_data(plan_data_list_param):
 
         for plan_data_dict in plan_data_list_param:

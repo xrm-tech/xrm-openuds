@@ -5,7 +5,7 @@ import sys, os
 # TODO: cleanup from hardcoded path ?
 sys.path.append('/opt/stackstorm/packs/xrm_openuds/')
 
-from plan import Failover
+from plan import FailOver
 
 # TODO: cleanup from hardcoded path ?
 packs_path= '/opt/stackstorm/packs/saved/'    
@@ -23,7 +23,7 @@ def parse_cmdline():
 def main():
     args = parse_cmdline()
 
-    if Failover.run(packs_path, args.name):
+    if FailOver.run(packs_path, args.name):
         sys.exit(0)
     else:
         sys.exit(1)

@@ -1,2 +1,2 @@
 from .generate import Generate
-from .failover import Failover
+from .failover import FailOver
