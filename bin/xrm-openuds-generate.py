@@ -13,8 +13,8 @@ packs_path= '/opt/stackstorm/packs/saved/'
 def parse_cmdline():
     parser = argparse.ArgumentParser(description='Generate xrm openuds plan')
     
-    parser.add_argument('-c', '--config', dest='config', action='store', type=str, required=True,
-                         help='YAML config file')
+    parser.add_argument('-c', '--config', dest='config', action='store', type=str, required=False,
+                         help='YAML config file (or - for read from stdin)')
 
     parser.add_argument('-n', '--name', dest='name', action='store', type=str, required=True,
                          help='plan name')
@@ -26,9 +26,11 @@ def main():
     args = parse_cmdline()
 
     config = None
-    with open(args.config, 'r') as stream:
-        config = yaml.safe_load(stream)
-    print(config)
+    if args.config == "" or args.config == "-":
+        config = yaml.safe_load(sys.stdin)
+    else:
+        with open(args.config, 'r') as stream:
+            config = yaml.safe_load(stream)
 
     if Generate.run(config, packs_path, args.name):
         sys.exit(0)
