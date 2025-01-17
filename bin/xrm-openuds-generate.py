@@ -26,7 +26,7 @@ def main():
     args = parse_cmdline()
 
     config = None
-    if args.config == "" or args.config == "-":
+    if args is None or args.config == "" or args.config == "-":
         config = yaml.safe_load(sys.stdin)
     else:
         with open(args.config, 'r') as stream:
