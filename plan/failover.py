@@ -323,7 +323,7 @@ class FailOver:
 
         result= False
         try:
-            plan_data_list = FailOver.__load_plan_data(plan=plan)
+            plan_data_list = FailOver.__load_plan_data(packs_path=packs_path, plan=plan)
             print(plan_data_list)
 
             if (plan_data_list):
