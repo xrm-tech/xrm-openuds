@@ -5,6 +5,7 @@ sys.path.append('/opt/stackstorm/packs/xrm_openuds/')
 from st2common.runners.base_action import Action
 from vdi import *
 import apiclient
+import traceback
 
 
 class RunGenerate(Action):
@@ -131,11 +132,8 @@ class RunGenerate(Action):
                     if service_pool_data:                       
                         service_pools_data_list.append(service_pool_data)         
 
-
-
-                except Exception as e:
-                
-                    print(e)
+                except Exception:                
+                    traceback.print_exc()
 
             self.__save_plan_data(
                 plan= plan_name, 
@@ -144,16 +142,15 @@ class RunGenerate(Action):
 
             self.__result= True
 
-        except Exception as e:
-            raise Exception('Caught exception: {}'.format(e))
+        except Exception as e:            
+            traceback.print_exc()
 
         finally:
             try:
                 src_broker_connection.logout()    
 
-            except Exception as e:
-                
-                print(e)
+            except Exception as e:               
+                traceback.print_exc()
 
             return self.__result
 
