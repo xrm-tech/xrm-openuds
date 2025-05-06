@@ -25,9 +25,78 @@ class ServicePool:
         self.assigned_services_list= list(filter(self.__filter_valid_services, __unfiltered_assigned_services_list))
         self.assignables_list= primary_broker.list_pool_assignables(self.id)
 
+    def __attach_groups(self, created_auth_group_ids, created_service_pool_id):
+        '''
+        Добавление групп в созданный сервис пул
+        '''
+        for group in self.groups_list:
 
+            if group.get("id") in created_auth_group_ids:
+                print(
+                    f"  Found created group \"{group.get('name')}\" with old id: {group.get('id')}. Trying to attach it to servicepool")
+                created_group_data = created_auth_group_ids.get(group.get('id'))
+                created_group_id = created_group_data.get('id')
+                result = self.__secondary_broker_connection.add_pool_groups(
+                    pool_id=created_service_pool_id,
+                    group_id=created_group_id
+                )
+                if not result:
+                    print(f"  Attached group successfully")
+                else:
+                    print(f"  Error when attaching group: {result}")
+
+
+            else:
+                print(f"  Warning! Not found created group \"{group.get('name')}\" with old id: {group.get('id')}. "
+                      f"  Cannot attach it to servicepool... Check __create_transport_by_type in transport")
+
+    def __attach_transports(self, created_transport_ids, created_servicepool_id):
+        '''
+        Добавление транспортов в созданный сервис пул
+        '''
+        for trans in self.transports_list:
+            old_id = trans.get('id')
+            if old_id in created_transport_ids:
+                print(
+                    f"  Found created transport \"{trans.get('name')}\" with old id: {old_id}. Trying to attach it to servicepool")
+                created_trans_id = created_transport_ids.get(old_id)
+                result = self.__secondary_broker_connection.add_pool_transports(
+                    pool_id=created_servicepool_id,
+                    transport_id=created_trans_id
+                )
+
+                if not result:
+                    print(f"  Attached transport successfully")
+                else:
+                    print(f"  Error when attaching group: {result}")
+
+            else:
+                print(f"  Warning! Not found created transport \"{trans.get('name')}\" with old id: {trans.get('id')}. "
+                      f"  Cannot attach it to servicepool... Check if type in transport.__create_transport_by_type")
+
+    def __attach_users(self, created_servicepool_id, created_user_ids):
+        '''
+        Назначение сервисов пользователям
+        '''
+        print(f"  Assigning users to services")
+        for assigned_service in self.assigned_services_list:
+            legacy_owner_id = assigned_service.get('owner_info').get('user_id')
+            if legacy_owner_id in created_user_ids:
+                unique_id = assigned_service.get('unique_id')
+                assign_result = self.__secondary_broker_connection.assign_pool_service(
+                    pool_id=created_servicepool_id,
+                    user_id=created_user_ids.get(legacy_owner_id),
+                    assignable_id=unique_id
+                )
+                if assign_result:
+                    print(f"  Assigned service successfully for user \"{assigned_service.get('owner')}\"")
+                else:
+                    print(f"  Some error when attaching user...")
+
+            else:
+                print(f"    Cant find user with old id {legacy_owner_id}...skipping")
     def __filter_valid_services(self, assigned_service):
-        if (assigned_service['state'] == 'U'):
+        if assigned_service['state'] == 'U':
             return True
         else:
             return False
@@ -56,14 +125,14 @@ class ServicePool:
         }
         not_none_auth_params = {k: v for k, v in params.items() if v is not None}
         return not_none_auth_params
-    def restore(self, created_base_services_id, created_auth_groups_id):
-        '''
-        Создание сервис-пулов         TODO: перепроверить.
-        '''
 
+    def restore(self, created_base_service_ids, created_auth_group_ids, created_transport_ids, created_user_ids):
+        '''
+        Создание сервис-пулов
+        '''
         print(f'\nCreating service pool \"{self.name}\"')
 
-        created_service_id = created_base_services_id.get(
+        created_service_id = created_base_service_ids.get(
             self.data_dict.get('service_id')
         )
         if created_service_id is not None:
@@ -73,30 +142,11 @@ class ServicePool:
             created_service_pool_id = created_service_pool.get('id')
             print(f"  Created service pool {self.name}\n  Result: {created_service_pool}")
 
-            '''
-            Добавление групп в созданный сервис пул
-            '''
-            for group in self.groups_list:
+            self.__attach_groups(created_auth_group_ids, created_service_pool_id)
 
-                if group.get("id") in created_auth_groups_id:
-                    print(f"  Found created group \"{group.get('name')}\" with old id: {group.get('id')}. Trying to attach it to servicepool")
-                    created_group_data = created_auth_groups_id.get(group.get('id'))
-                    created_group_id = created_group_data.get('id')
-                    result = self.__secondary_broker_connection.add_pool_groups(
-                        pool_id=created_service_pool_id,
-                        group_id=created_group_id
-                    )
-                    if not result:
-                        print(f"  Attached group successfully")
-                    else:
-                        print(f"  Error when attaching group: {result}")
+            self.__attach_transports(created_transport_ids, created_service_pool_id)
 
-
-                else:
-                    print(f"  Warning! Not found created group \"{group.get('name')}\" with old id: {group.get('id')}. "
-                          f"  Cannot attach it to servicepool...")
-
-
+            self.__attach_users(created_service_pool_id, created_user_ids)
             return created_service_pool_id
 
         else:

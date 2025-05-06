@@ -3,10 +3,11 @@ import sys
 sys.path.append('/opt/stackstorm/packs/xrm_openuds/')
 import apiclient
 
+AD_AUTH_TYPE = 'ActiveDirectoryAuthenticator'
+INT_AUTH_TYPE = 'InternalDBAuth'
 
 class Authenticator:
     perm_class = 'authenticators'
-
     __primary_broker_connection: apiclient.Client
     __secondary_broker_connection: apiclient.Client
     __pool_groups_list: list
@@ -22,6 +23,7 @@ class Authenticator:
     '''
     __old_group_to_new_ids_dict = {}
     __old_auth_to_new_ids_dict = {}
+    __old_user_to_new_ids_dict = {}
 
     def __init__(self, primary_broker, pool_groups_list, pool_assigned_services):
 
@@ -38,7 +40,6 @@ class Authenticator:
     def restore(self):
         """
         Создание аутентификаторов, групп и пользователей
-        Возвращает словарь, в котором парами являются прежние и новосозданные id аутентификаторов
         """
 
         print(f'\nCreating authenticators')
@@ -83,10 +84,12 @@ class Authenticator:
                             group_id_comparison_dict=self.__old_group_to_new_ids_dict
                         )
         print("  Authenticator restore summary:")
-        print(f"  Created group ids match dict: {self.__old_group_to_new_ids_dict}")
         print(f"  Created auth ids match dict: {self.__old_auth_to_new_ids_dict}")
+        print(f"  Created group ids match dict: {self.__old_group_to_new_ids_dict}")
+        print(f"  Created user ids match dict: {self.__old_user_to_new_ids_dict}")
 
-        return self.__old_auth_to_new_ids_dict, self.__old_group_to_new_ids_dict
+        return self.__old_auth_to_new_ids_dict, self.__old_group_to_new_ids_dict, self.__old_user_to_new_ids_dict
+
     def __restore_auth_groups(self, created_auth_id, group_data):
 
             print(f'\n  Creating {group_data.get("name")} group')
@@ -167,7 +170,14 @@ in group_id_comparison={group_id_comparison_dict}")
                     print(f"        Trying to create user with params: {params}")
                     created_auth_user_result = (
                         self.__secondary_broker_connection.create_auth_user(**not_none_user_params))
+
+
                     if not created_auth_user_result:
+                        created_users_list = self.__secondary_broker_connection.list_auth_users(created_auth_id)
+                        for created_user in created_users_list:
+                            if created_user.get('name') == user.get('name'):
+                                self.__old_user_to_new_ids_dict.update({user.get('id'): created_user.get('id')})
+                                break
                         print(f'      Created \"{user.get("name")}\" user successfully\n')
                     else:
                         print(f'!!! Warning: {created_auth_user_result}')
@@ -243,7 +253,7 @@ in group_id_comparison={group_id_comparison_dict}")
         return users_list
 
     def __get_auth_params_by_type(self, auth):
-        if auth.get("type") == 'ActiveDirectoryAuthenticator':
+        if auth.get("type") == AD_AUTH_TYPE:
             print(f'\n  Creating {auth.get("name")}')
 
             params = {
@@ -265,7 +275,7 @@ in group_id_comparison={group_id_comparison_dict}")
             }
             params = {k: v for k, v in params.items() if v is not None}
 
-        elif auth.get("type") == 'InternalDBAuth':
+        elif auth.get("type") == INT_AUTH_TYPE:
             print(f'\n  Creating {auth.get("name")}')
 
             params = {
@@ -290,9 +300,9 @@ in group_id_comparison={group_id_comparison_dict}")
     def __create_auth_by_type(self, auth_type, params):
         created_auth = None
 
-        if auth_type == 'ActiveDirectoryAuthenticator':
+        if auth_type == AD_AUTH_TYPE:
             created_auth = self.__secondary_broker_connection.create_ad_auth(**params)
-        elif auth_type == 'InternalDBAuth':
+        if auth_type == INT_AUTH_TYPE:
             created_auth = self.__secondary_broker_connection.create_internal_auth(**params)
 
         print(f'  Created authenticator result: {created_auth}')

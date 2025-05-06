@@ -25,11 +25,11 @@ data= read_data(
 for plan_data_dict in data:
     service_name = plan_data_dict['service_name']
     print(f'\n+ service name: {service_name}')
-    service_pool= plan_data_dict['service_pool']
-    service_provider= plan_data_dict['service_provider']
-    authenticator= plan_data_dict['authenticator']
-    transport= plan_data_dict['transport']
-    permissions= plan_data_dict['permissions']
+    service_pool = plan_data_dict['service_pool']
+    service_provider = plan_data_dict['service_provider']
+    authenticator = plan_data_dict['authenticator']
+    transport = plan_data_dict['transport']
+    permissions = plan_data_dict['permissions']
     service_pool.get_logs()
     service_provider.get_logs()
     authenticator.get_logs()

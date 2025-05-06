@@ -13,8 +13,10 @@ class RunFailOver(Action):
     packs_path = '/opt/stackstorm/packs/saved/'
 
     def __send_data(self, plan_data_list_param):
-        created_auths_id = {}
-        created_groups_id = {}
+        created_auth_ids = {}
+        created_group_ids = {}
+        created_user_ids = {}
+        created_transport_ids = {}
 
         for plan_index, plan_data_dict in enumerate(plan_data_list_param):
             try:
@@ -47,14 +49,22 @@ class RunFailOver(Action):
                     единожды за план восстановления
                     '''
                     authenticator.set_connection(secondary_broker_connection=dst_broker_connection)
-                    created_auths_id, created_groups_id = authenticator.restore()
+                    created_auth_ids, created_group_ids, created_user_ids = authenticator.restore()
 
                 service_provider.set_connection(secondary_broker_connection=dst_broker_connection)
                 created_provider_id = service_provider.restore()
                 created_base_services_id = service_provider.restore_base_services()
 
+                transport.set_connection(secondary_broker_connection=dst_broker_connection)
+                created_transport_ids = transport.restore()
+
                 service_pool.set_connection(secondary_broker_connection=dst_broker_connection)
-                created_service_pool_id = service_pool.restore(created_base_services_id, created_groups_id)
+                created_service_pool_id = service_pool.restore(
+                    created_base_service_ids=created_base_services_id,
+                    created_auth_group_ids=created_group_ids,
+                    created_transport_ids=created_transport_ids,
+                    created_user_ids=created_user_ids,
+                )
 
 
             except KeyError as k:
