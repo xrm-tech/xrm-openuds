@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# HOSTVM VDI 3.5
+# HOSTVM VDI 3.6
 
 from dataclasses import dataclass, field
 
@@ -53,6 +53,7 @@ class IPMachinesService(Service):
 @dataclass
 class oVirtLinkedService(Service):
     '''oVirt/RHEV Linked Clone'''
+    data_type: str = 'oVirtLinkedService'
     cluster: str = ''  # *
     datastore: str = ''  # *
     minSpaceGB: str = '32'
@@ -63,6 +64,14 @@ class oVirtLinkedService(Service):
     display: str = ''
     baseName: str = ''  # *
     lenName: str = '5'
+
+@dataclass
+class oVirtFixedService(Service):
+    '''oVirt/RHEV Fixed Machines'''
+    data_type: str = 'oVirtFixedService'
+    token: str = ''
+    cluster: str = ''  # *
+    machine: list = field(default_factory=list)  # *
 
 # Authenticators
 

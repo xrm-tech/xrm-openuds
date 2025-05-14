@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 
-# HOSTVM VDI 3.5
+# HOSTVM VDI 3.6
 
 from httplib2 import Http
 import json
-import sys
 
 from dataclasses import asdict
 
@@ -16,165 +15,127 @@ class Client:
     _auth: str
     _username: str
     _password: str
+    _verify_certificate: bool
 
     _headers: dict = {}
 
-    def __init__(self, host: str, auth: str, username: str, password: str) -> None:
+    def __init__(self, host: str, auth: str, username: str, password: str, verify_certificate: bool = False) -> None:
         self._host = host
         self._auth = auth
         self._username = username
         self._password = password
         self._rest_url = 'https://{}/uds/rest/'.format(self._host)
+        self._verify_certificate = verify_certificate
 
     def _request(self, endpoint: str, method: str = 'GET', body: str = ''):
-        h = Http(disable_ssl_certificate_validation=True)
-        resp, content = h.request(uri=self._rest_url + endpoint, method=method, body=body, headers=self._headers)
-        return resp, content
+        if not self._verify_certificate:
+            h = Http(disable_ssl_certificate_validation=True)
+        else:
+            h = Http()
+        uri = self._rest_url + endpoint
+        resp, content = h.request(uri=uri, method=method, body=body, headers=self._headers)
+        if resp.status != 200:
+            raise Exception('Error {} when requesting uri {}, reason: {}\nResponse: {}'.format(resp.status, uri, resp.reason, content))
+        return json.loads(content)
 
     def login(self):
         '''Аутентификация пользователя'''
         parameters = '{ "auth": "' + self._auth + '", "username": "' + self._username + '", "password": "' + self._password + '" }'
-        resp, content = self._request('auth/login', 'POST', parameters)
-        if resp['status'] != '200':  # Authentication error due to incorrect parameters, bad request, etc...
-            raise Exception('Authentication error: {}'.format(resp['status']))
-        res = json.loads(content)
+        res = self._request('auth/login', 'POST', parameters)
         if res['result'] != 'ok':  # Authentication error
-            raise Exception('Authentication error: {}'.format(res['result']))
+            raise Exception('Authentication error: {}'.format(res['error']))
         self._headers['X-Auth-Token'] = res['token']
         return
 
     def logout(self):
         '''Завершение сессии'''
-        resp, content = self._request('auth/logout')
-        if resp['status'] != '200':  # Logout error due to incorrect parameters, bad request, etc...
-            raise Exception('Authentication error: {}'.format(resp['status']))
-        return
+        res = self._request('auth/logout')
+        return 'Logout: {}'.format(res['result'])
 
 #Readers
 
 #Providers
     def list_providers(self):
         '''Получение списка провайдеров'''
-        resp, content = self._request('providers')
-        if resp['status'] != '200':  # error due to incorrect parameters, bad request, etc...
-            raise Exception('Error requesting base services\nresp:{}\ncontent:{}'.format(resp, content))
-        return json.loads(content)
+        return self._request('providers')
 
     def get_provider(self, provider_id: str):
         '''Получение параметров провайдера'''
-        resp, content = self._request('providers/{0}'.format(provider_id))
-        if resp['status'] != '200':  # error due to incorrect parameters, bad request, etc...
-            raise Exception('Error requesting base services\nresp:{}\ncontent:{}'.format(resp, content))
-        return json.loads(content)
+        return self._request('providers/{0}'.format(provider_id))
 
     def list_services(self):
         '''Получение всех базовых сервисов'''
-        resp, content = self._request('providers/allservices')
-        if resp['status'] != '200':  # error due to incorrect parameters, bad request, etc...
-            raise Exception('Error requesting base services\nresp:{}\ncontent:{}'.format(resp, content))
-        return json.loads(content)
+        return self._request('providers/allservices')
 
     def list_provider_services(self, provider_id: str):
-        resp, content = self._request('providers/{0}/services'.format(provider_id))
-        if resp['status'] != '200':  # error due to incorrect parameters, bad request, etc...
-            raise Exception('Error requesting base services\nresp:{}\ncontent:{}'.format(resp, content))
-        return json.loads(content)
+        return self._request('providers/{0}/services'.format(provider_id))
 
     def get_provider_service(self, provider_id: str, service_id: str):
         '''Получение параметров базового сервиса'''
-        resp, content = self._request('providers/{0}/services/{1}'.format(provider_id, service_id))
-        if resp['status'] != '200':  # error due to incorrect parameters, bad request, etc...
-            raise Exception('Error requesting pools: response: {}, content: {}'.format(resp, content))
-        return json.loads(content)
+        return self._request('providers/{0}/services/{1}'.format(provider_id, service_id))
 
 #Authenticators
     def list_auths(self):
         '''Получение списка аутентификаторов'''
-        resp, content = self._request('authenticators')
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
+        return self._request('authenticators')
 
     def get_auth(self, auth_id: str):
         '''Получение параметров аутентификатора'''
-        resp, content = self._request('authenticators/{}'.format(auth_id))
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
+        return self._request('authenticators/{}'.format(auth_id))
 
     def list_auth_groups(self, auth_id: str):
         '''Получение списка групп в аутентификаторе'''
-        resp, content = self._request('authenticators/{}/groups'.format(auth_id))
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
+        return self._request('authenticators/{}/groups'.format(auth_id))
 
     def get_auth_group(self, auth_id: str, group_id: str):
         '''Получение параметров группы аутентификатора'''
-        resp, content = self._request('authenticators/{}/groups/{}'.format(auth_id, group_id))
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
+        return self._request('authenticators/{}/groups/{}'.format(auth_id, group_id))
 
     def list_auth_users(self, auth_id: str):
         '''Получение списка пользователей в аутентификаторе'''
-        resp, content = self._request('authenticators/{}/users'.format(auth_id))
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
+        return self._request('authenticators/{}/users'.format(auth_id))
 
     def get_auth_user(self, auth_id: str, user_id: str):
         '''Получение параметров пользователя в аутентификаторе'''
-        resp, content = self._request('authenticators/{}/users/{}'.format(auth_id, user_id))
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
+        return self._request('authenticators/{}/users/{}'.format(auth_id, user_id))
 
     def list_auth_group_users(self, auth_id: str, group_id: str):
         '''Пользователи группы'''
-        resp, content = self._request('authenticators/{}/groups/{}/users'.format(auth_id, group_id))
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
+        return self._request('authenticators/{}/groups/{}/users'.format(auth_id, group_id))
 
 #OS Managers
     def list_osmanagers(self):
         '''Получение списка менеджеров ОС'''
-        resp, content = self._request('osmanagers')
-        if resp['status'] != '200':  # error due to incorrect parameters, bad request, etc...
-            raise Exception('Error requesting osmanagers\nresp:{}\ncontent:{}'.format(resp, content))
-        return json.loads(content)
+        return self._request('osmanagers')
 
     def get_osmanager(self, osmanager_id: str):
         '''Получение параметров менеджера ОС'''
-        resp, content = self._request('osmanagers/{}'.format(osmanager_id))
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
+        return self._request('osmanagers/{}'.format(osmanager_id))
 
 #Transports
 
     def list_transports(self):
         '''Получение списка созданных транспортов'''
-        resp, content = self._request('transports')
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
+        return self._request('transports')
 
     def get_transport(self, transport_id: str):
         '''Получение параметров транспорта'''
-        resp, content = self._request('transports/{}'.format(transport_id))
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
+        return self._request('transports/{}'.format(transport_id))
+
+#Networks
+
+    def list_networks(self):
+        '''Получение списка сетей'''
+        return self._request('networks')
+
+    def get_network(self, network_id: str):
+        '''Получение параметров транспорта'''
+        return self._request('networks/{}'.format(network_id))
 
 #Pools
     def list_pools(self):
         '''Получение списка сервис-пулов и их параметров'''
-        resp, content = self._request('servicespools/overview')
-        if resp['status'] != '200':  # error due to incorrect parameters, bad request, etc...
-            raise Exception('Error requesting pools: {}'.format(resp['status']))
-        return json.loads(content)
+        return self._request('servicespools/overview')
 
     def get_pool_id(self, name: str):
         '''Получение id сервис-пула по имени'''
@@ -186,68 +147,41 @@ class Client:
 
     def get_pool(self, pool_id: str):
         '''Получение параметров сервис-пула'''
-        resp, content = self._request('servicespools/{}'.format(pool_id))
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
+        return self._request('servicespools/{}'.format(pool_id))
 
     def list_pool_groups(self, pool_id: str):
         '''Получение списка добавленных в пул групп'''
-        resp, content = self._request('servicespools/{}/groups'.format(pool_id))
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
+        return self._request('servicespools/{}/groups'.format(pool_id))
 
     def list_pool_transports(self, pool_id: str):
         '''Получение списка добавленных в пул транспортов'''
-        resp, content = self._request('servicespools/{}/transports'.format(pool_id))
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
+        return self._request('servicespools/{}/transports'.format(pool_id))
 
     def list_pool_assigned_services(self, pool_id: str):
         '''Получение списка назначенных пользователям сервисов пула'''
-        resp, content = self._request('servicespools/{}/services'.format(pool_id))
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
+        return self._request('servicespools/{}/services'.format(pool_id))
 
     def list_pool_cached_services(self, pool_id: str):
         '''Получение списка находящихся в кэше сервисов пула'''
-        resp, content = self._request('servicespools/{}/cache'.format(pool_id))
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
+        return self._request('servicespools/{}/cache'.format(pool_id))
 
     def list_pool_publications(self, pool_id: str):
         '''Получение списка публикаций пула'''
-        resp, content = self._request('servicespools/{}/publications'.format(pool_id))
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
+        return self._request('servicespools/{}/publications'.format(pool_id))
 
     def list_pool_changelog(self, pool_id: str):
         '''Получение журнала изменений публикаций пула'''
-        resp, content = self._request('servicespools/{}/changelog'.format(pool_id))
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
+        return self._request('servicespools/{}/changelog'.format(pool_id))
 
     def list_pool_assignables(self, pool_id: str):
         '''Получение списка назначаемых сервисов пула'''
-        resp, content = self._request('servicespools/{}/listAssignables'.format(pool_id))
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
+        return self._request('servicespools/{}/listAssignables'.format(pool_id))
 
 #Config
 
     def get_config(self):
         '''Get system config'''
-        resp, content = self._request('config')
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
+        return self._request('config')
 
     def get_permissions(self, cls: str, uuid: str):
         '''Get permissions for an object
@@ -268,23 +202,17 @@ class Client:
                 }
             uuid: object id
         '''
-        resp, content = self._request('permissions/{}/{}'.format(cls, uuid))
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
+        return self._request('permissions/{}/{}'.format(cls, uuid))
 
     def list_actor_tokens(self):
-        ''''''
-        resp, content = self._request('actortokens')
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
+        '''Получение списка токенов агента'''
+        return self._request('actortokens')
 
 #Writers
 
 #Providers
 
-    def create_static_provider(self, name: str, comments: str='', tags: list=[], config: str=''):
+    def create_static_provider(self, name: str, comments: str='', tags: list=[], config: str='', **kwargs):
         '''Создание сервис-провайдера Static IP Machines'''
         data = {
             'name': name,
@@ -293,10 +221,8 @@ class Client:
             'tags': tags,
             'config': config,
         }
-        resp, content = self._request('providers', 'PUT', body=json.dumps(data))
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
+        data.update(kwargs)
+        return self._request('providers', 'PUT', body=json.dumps(data))
 
     def create_staticmultiple_service(
         self,
@@ -310,6 +236,7 @@ class Client:
         skipTimeOnFailure: int=0,
         maxSessionForMachine: int=0,
         lockByExternalAccess: bool=False,
+        **kwargs
     ):
         '''Создание базового сервиса Static Multiple IP'''
         data = {
@@ -326,34 +253,35 @@ class Client:
             'maxSessionForMachine': maxSessionForMachine,
             'lockByExternalAccess': lockByExternalAccess,
         }
-        resp, content = self._request(
+        data.update(kwargs)
+        return self._request(
             'providers/{0}/services'.format(provider_id),
             'PUT',
             body=json.dumps(data)
         )
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
 
     def create_ovirt_provider(self, name: str, **kwargs):
         '''Создание сервис-провайдера oVirt/RHEV Platform'''
         data = asdict(types.oVirtPlatform(name=name, **kwargs))
-        resp, content = self._request('providers', 'PUT', body=json.dumps(data))
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
+        return self._request('providers', 'PUT', body=json.dumps(data))
 
     def create_ovirtlinked_service(self, provider_id: str, name: str, **kwargs):
         '''Создание базового сервиса oVirt/RHEV Linked Clone'''
         data = asdict(types.oVirtLinkedService(name=name, **kwargs))
-        resp, content = self._request(
+        return self._request(
             'providers/{0}/services'.format(provider_id),
             'PUT',
             body=json.dumps(data)
         )
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
+
+    def create_ovirtfixed_service(self, provider_id: str, name: str, **kwargs):
+        '''Создание базового сервиса oVirt/RHEV Fixed Machines'''
+        data = asdict(types.oVirtFixedService(name=name, **kwargs))
+        return self._request(
+            'providers/{0}/services'.format(provider_id),
+            'PUT',
+            body=json.dumps(data)
+        )
 
 #Authenticators
 
@@ -373,7 +301,8 @@ class Client:
         groupBase: str='',
         defaultDomain: str='',
         nestedGroups: str=False,
-        visible: bool=True
+        visible: bool=True,
+        **kwargs
     ):
         '''Создание аутентификатора Active Directory'''
         data = {
@@ -394,10 +323,8 @@ class Client:
             'data_type': 'ActiveDirectoryAuthenticator',
             'visible': visible
         }
-        resp, content = self._request('authenticators', 'PUT', body=json.dumps(data))
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
+        data.update(kwargs)
+        return self._request('authenticators', 'PUT', body=json.dumps(data))
 
     def create_internal_auth(
         self,
@@ -409,7 +336,8 @@ class Client:
         differentForEachHost: bool,
         reverseDns: bool,
         acceptProxy: bool,
-        visible: bool
+        visible: bool,
+        **kwargs
     ):
         '''Создание аутентификатора Internal Database'''
         data = {
@@ -424,10 +352,8 @@ class Client:
             'data_type': 'InternalDBAuth',
             'visible': visible
         }
-        resp, content = self._request('authenticators', 'PUT', body=json.dumps(data))
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
+        data.update(kwargs)
+        return self._request('authenticators', 'PUT', body=json.dumps(data))
 
     def create_regexldap_auth(
         self,
@@ -448,7 +374,8 @@ class Client:
         groupNameAttr: str='cn',
         userNameAttr: str='uid',
         altClass: str='',
-        visible: bool=True
+        visible: bool=True,
+        **kwargs
     ):
         '''Создание аутентификатора Regex LDAP'''
         data = {
@@ -472,10 +399,8 @@ class Client:
             'data_type': 'RegexLdapAuthenticator',
             'visible': visible
         }
-        resp, content = self._request('authenticators', 'PUT', body=json.dumps(data))
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
+        data.update(kwargs)
+        return self._request('authenticators', 'PUT', body=json.dumps(data))
 
     def create_simpleldap_auth(
         self,
@@ -497,7 +422,8 @@ class Client:
         groupIdAttr: str='cn',
         memberAttr: str='memberUid',
         userNameAttr: str='uid',
-        visible: bool=True
+        visible: bool=True,
+        **kwargs,
     ):
         '''Создание аутентификатора Simple LDAP'''
         data = {
@@ -522,10 +448,8 @@ class Client:
             'data_type': 'SimpleLdapAuthenticator',
             'visible': visible
         }
-        resp, content = self._request('authenticators', 'PUT', body=json.dumps(data))
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
+        data.update(kwargs)
+        return self._request('authenticators', 'PUT', body=json.dumps(data))
 
     def create_saml_auth(
         self,
@@ -543,7 +467,8 @@ class Client:
         entityID: str='',
         usePassword: bool=False,
         pwdAttr: str='',
-        visible: bool=True
+        visible: bool=True,
+        **kwargs
     ):
         '''Создание аутентификатора SAML'''
         data = {
@@ -564,10 +489,8 @@ class Client:
             'data_type': 'SAML20Authenticator',
             'visible': visible
         }
-        resp, content = self._request('authenticators', 'PUT', body=json.dumps(data))
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
+        data.update(kwargs)
+        return self._request('authenticators', 'PUT', body=json.dumps(data))
 
     def create_auth_group(
         self,
@@ -576,7 +499,8 @@ class Client:
         comments: str = '',
         state: str = 'A',
         meta_if_any: bool = False,
-        pools: list = []
+        pools: list = [],
+        **kwargs
     ):
         '''Добавление группы в аутентификатор'''
         data = {
@@ -587,14 +511,12 @@ class Client:
             'meta_if_any': meta_if_any,
             'pools': pools
         }
-        resp, content = self._request(
+        data.update(kwargs)
+        return self._request(
             'authenticators/{}/groups'.format(auth_id),
             'PUT',
             body=json.dumps(data)
         )
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
 
     def create_auth_user(
         self,
@@ -606,6 +528,7 @@ class Client:
         password: str = '',
         role: str = 'user',
         groups: list = [],
+        **kwargs
     ):
         '''Добавление пользователя в аутентификатор'''
         role = role.lower()
@@ -629,59 +552,41 @@ class Client:
             'groups': groups,
             'role': role,
         }
+        data.update(kwargs)
         if password:
             data['password'] = password
-        resp, content = self._request(
+        return self._request(
             'authenticators/{}/users'.format(auth_id),
             'PUT',
             body=json.dumps(data)
         )
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        # print("Successfully added user {} for auth {}".format(username, auth_id))
-        return json.loads(content)
 
 #OS Managers
 
     def create_linux_osmanager(self, name: str, **kwargs):
         '''Создание менеджера ОС Linux'''
         data = asdict(types.LinuxManager(name=name, **kwargs))
-        resp, content = self._request('osmanagers', 'PUT', body=json.dumps(data))
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
+        return self._request('osmanagers', 'PUT', body=json.dumps(data))
 
     def create_linrandom_osmanager(self, name: str, **kwargs):
         '''Создание менеджера ОС Linux Random Password'''
         data = asdict(types.LinRandomPasswordManager(name=name, **kwargs))
-        resp, content = self._request('osmanagers', 'PUT', body=json.dumps(data))
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
+        return self._request('osmanagers', 'PUT', body=json.dumps(data))
 
     def create_windows_osmanager(self, name: str, **kwargs):
         '''Создание менеджера ОС Windows Basic'''
         data = asdict(types.WindowsManager(name=name, **kwargs))
-        resp, content = self._request('osmanagers', 'PUT', body=json.dumps(data))
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
+        return self._request('osmanagers', 'PUT', body=json.dumps(data))
 
     def create_winrandom_osmanager(self, name: str, **kwargs):
         '''Создание менеджера ОС Windows Random Password'''
         data = asdict(types.WinRandomPasswordManager(name=name, **kwargs))
-        resp, content = self._request('osmanagers', 'PUT', body=json.dumps(data))
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
+        return self._request('osmanagers', 'PUT', body=json.dumps(data))
 
     def create_windomain_osmanager(self, name: str, **kwargs):
         '''Создание менеджера ОС Windows Domain'''
         data = asdict(types.WinDomainManager(name=name, **kwargs))
-        resp, content = self._request('osmanagers', 'PUT', body=json.dumps(data))
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
+        return self._request('osmanagers', 'PUT', body=json.dumps(data))
 
 #Transports
 
@@ -720,40 +625,31 @@ class Client:
     #         keyword arguments, transport type dependent
     #     '''
     #     data = {}
-    #     resp, content = self._request(
+    #     return self._request(
     #         'transports',
     #         'PUT',
     #         body=json.dumps(data)
     #     )
-    #     if resp['status'] != '200':
-    #         raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-    #     return json.loads(content)
 
     def create_rdpdirect_transport(self, name: str, **kwargs):
         '''Create RDP direct transport'''
         data = asdict(types.RDPTransport(name=name, **kwargs))
-        resp, content = self._request(
+        return self._request(
             'transports',
             'PUT',
             body=json.dumps(data)
         )
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
 
     def create_rdptunnel_transport(self, name: str, tunnelServer: str, **kwargs):
         '''Create RDP tunnel transport'''
         if not tunnelServer:
             raise ValueError('tunnelServer cannot be empty, valid format is HOST:PORT')
         data = asdict(types.TSRDPTransport(name=name, tunnelServer=tunnelServer, **kwargs))
-        resp, content = self._request(
+        return self._request(
             'transports',
             'PUT',
             body=json.dumps(data)
         )
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
 
     # def create_x2go_transport(
     #     self,
@@ -781,25 +677,20 @@ class Client:
     #         'type': 'X2GOTransport',
     #         # TODO: transport config
     #     }
-    #     resp, content = self._request(
+    #     return self._request(
     #         'transports',
     #         'PUT',
     #         body=json.dumps(data)
     #     )
-    #     if resp['status'] != '200':
-    #         raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-    #     return json.loads(content)
 
     def add_transport_networks(self, network_id: str, transport_id: str):
         '''Add network to a transport'''
         data = {'id': network_id}
-        resp, content = self._request(
+        content = self._request(
             'transports/{}/networks'.format(transport_id),
             'PUT',
             body=json.dumps(data)
         )
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
         # print("Successfully added transport {} for network {}".format(transport_id, network_id))
         return
 
@@ -826,6 +717,7 @@ class Client:
         cache_l1_srvs: int = 0,
         cache_l2_srvs: int = 0,
         max_srvs: int = 0,
+        **kwargs
     ):
         '''Создание нового пула'''
         if image_id is None: image_id = '-1'
@@ -853,21 +745,13 @@ class Client:
             'account_id': account_id,
             'calendar_message': calendar_message
         }
-
-        resp, content = self._request('servicespools','PUT', body=json.dumps(data))
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        #r = json.loads(content)
-        #print("Correctly created {} with id {}".format(r['name'], r['id']))
-        #print("The record created was: {}".format(r))
-        return json.loads(content)
+        data.update(kwargs)
+        return self._request('servicespools','PUT', body=json.dumps(data))
 
     def delete_pool(self, pool_id: str):
         '''Удаление сервис-пула'''
         # Method MUST be DELETE
-        resp, content = self._request('servicespools/{}'.format(pool_id), 'DELETE')
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
+        content = self._request('servicespools/{}'.format(pool_id), 'DELETE')
         #print("Correctly deleted {}".format(pool_id))
         return
 
@@ -877,51 +761,32 @@ class Client:
         В качестве примера для демонстрации реализовано изменение максимального количества ВРС в пуле
         '''
         # TODO: pool paramaters
-        resp, content = self._request('servicespools/{}'.format(pool_id))
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
+        content = self._request('servicespools/{}'.format(pool_id))
         data = json.loads(content)
         data['max_srvs'] = max_services
-        resp, content = self._request('servicespools/{}'.format(pool_id), 'PUT', body=json.dumps(data))
-        if resp['status'] != '200':
-            print("Error in request: \n-------------------\n{}\n{}\n----------------".format(resp, content))
-            sys.exit(1)
-        #r = json.loads(content)
-        #print("Successfully modified pool id: {} with data:\n{}".format(pool_id, r))
-        return json.loads(content)
+        return self._request('servicespools/{}'.format(pool_id), 'PUT', body=json.dumps(data))
 
     def publish_pool(self, pool_id: str):
         '''Публикация пула'''
-        resp, content = self._request('servicespools/{}/publications/publish'.format(pool_id))
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
+        return self._request('servicespools/{}/publications/publish'.format(pool_id))
 
     def add_pool_groups(self, pool_id: str, group_id: str):
         '''Добавление в пул группы доступа'''
         data = {'id': group_id}
-        resp, content = self._request(
+        return self._request(
             'servicespools/{}/groups'.format(pool_id),
             'PUT',
             body=json.dumps(data)
         )
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        #print("Successfully added group {} for pool {}".format(group_id, pool_id))
-        return json.loads(content)
 
     def add_pool_transports(self, pool_id: str, transport_id: str):
         '''Добавление в пул транспорта'''
         data = {'id': transport_id}
-        resp, content = self._request(
+        return self._request(
             'servicespools/{}/transports'.format(pool_id),
             'PUT',
             body=json.dumps(data)
         )
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        #print("Successfully added transport {} for pool {}".format(transport_id, pool_id))
-        return json.loads(content)
 
     def assign_pool_service(self, pool_id: str, user_id: str, assignable_id: str):
         '''Assign pool service to a user'''
@@ -929,17 +794,14 @@ class Client:
             'user_id': user_id,
             'assignable_id': assignable_id,
         }
-        resp, content = self._request(
+        return self._request(
             'servicespools/{}/createFromAssignable'.format(pool_id),
             body=json.dumps(data)
         )
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
 
 #Config
 
-    def set_permissions(self, cls: str, uuid: str, perm_type: str, entity_id: str, perm: int):
+    def set_permissions(self, cls: str, uuid: str, perm_type: str, entity_id: str, perm: int, **kwargs):
         '''Set permissions for an object
 
         Args:
@@ -970,9 +832,46 @@ class Client:
             '64': '2'
         }
         data = {'perm': perms.get(str(perm), None)}
+        
         if not data['perm']:
             raise ValueError('Invalid permission: {}'.format(perm))
-        resp, content = self._request('permissions/{}/{}/{}/add/{}'.format(cls, uuid, perm_type, entity_id), 'PUT', body=json.dumps(data))
-        if resp['status'] != '200':
-            raise Exception('Error in request: \n-------------------\n{}\n{}\n----------------'.format(resp, content))
-        return json.loads(content)
+        return self._request('permissions/{}/{}/{}/add/{}'.format(cls, uuid, perm_type, entity_id), 'PUT', body=json.dumps(data))
+
+    def create_actor_token(
+        self,
+        token: str,
+        ip: str,
+        hostname: str,
+        mac: str, 
+        log_level: str = 'ERROR',
+        pre_command: str = '',
+        post_command: str = '',
+        runonce_command: str = '',
+        **kwargs
+    ):
+        '''Create actor token
+        
+        Args:
+            log_level: must be 'DEBUG', 'INFO', 'ERROR' or 'FATAL'
+        '''
+        levels = {
+            'DEBUG': 0,
+            'INFO': 1,
+            'ERROR': 2,
+            'FATAL': 3
+        }
+        log_level = levels.get(str(log_level), None)
+        if not log_level:
+            raise ValueError('Invalid log level: {}'.format(log_level))
+        data = {
+            'token': token,
+            'ip': ip,
+            'hostname': hostname,
+            'mac': mac, 
+            'log_level': log_level,
+            'pre_command': pre_command,
+            'post_command': post_command,
+            'runonce_command': runonce_command
+        }
+        data.update(kwargs)
+        return self._request('actortokens', 'PUT', body=json.dumps(data))
