@@ -47,7 +47,7 @@ class Authenticator:
         for auth in self.data_list:
 
             legacy_id = auth['id']
-            params = self.__get_auth_params_by_type(auth)
+            params = self.__get_auth_params_if_supported(auth)
             if params is not None:
 
                 created_auth = self.__create_auth_by_type(
@@ -252,47 +252,18 @@ in group_id_comparison={group_id_comparison_dict}")
 
         return users_list
 
-    def __get_auth_params_by_type(self, auth):
-        if auth.get("type") == AD_AUTH_TYPE:
-            print(f'\n  Creating {auth.get("name")}')
-
-            params = {
-                'name': auth.get('name'),
-                'label': auth.get('small_name'),
-                'host': auth.get('host'),
-                'username': auth.get('username'),
-                'password': auth.get('password'),
-                'ldapBase': auth.get('ldapBase'),
-                'comments': auth.get('comments'),
-                'tags': auth.get('tags'),
-                'priority': auth.get('priority'),
-                'ssl': auth.get('ssl'),
-                'timeout': auth.get('timeout'),
-                'groupBase': auth.get('groupBase'),
-                'defaultDomain': auth.get('defaultDomain'),
-                'nestedGroups': auth.get('nestedGroups'),
-                'visible': auth.get('visible'),
-            }
-            params = {k: v for k, v in params.items() if v is not None}
-
-        elif auth.get("type") == INT_AUTH_TYPE:
-            print(f'\n  Creating {auth.get("name")}')
-
-            params = {
-                'name': auth.get('name'),
-                'comments': auth.get('comments'),
-                'tags': auth.get('tags'),
-                'priority': auth.get('priority'),
-                'label': auth.get('small_name'),
-                'differentForEachHost': auth.get('differentForEachHost'),
-                'reverseDns': auth.get('reverseDns'),
-                'acceptProxy': auth.get('acceptProxy'),
-                'visible': auth.get('visible')
-            }
-            params = {k: v for k, v in params.items() if v is not None}
-
+    def __get_auth_params_if_supported(self, auth):
+        supported_auth_types = {
+            "ActiveDirectoryAuthenticator",
+            "InternalDBAuth",
+            "RegexLdapAuthenticator",
+            "SimpleLdapAuthenticator",
+            "SAML20Authenticator",
+        }
+        if auth.get("type") in supported_auth_types :
+            print(f'\n  Creating {auth.get("name")} with type {auth.get("type")}')
         else:
-            print(f'\n!!! Warning: skipping unsupported authenticator {auth.get("name")}')
+            print(f'\nWarning: skipping unsupported authenticator {auth.get("name")}')
             params = None
 
         return params
