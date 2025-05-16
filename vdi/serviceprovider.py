@@ -87,15 +87,9 @@ class ServiceProvider:
         if provider_type == 'Static IP Machines Provider':
 
             print(f'  Supported provider type: {provider_type}')
-            params = {
-                'name': self.data_dict.get('name'),
-                'comments': self.data_dict.get('comments'),
-                'tags': self.data_dict.get('tags'),
-                'config': self.data_dict.get('config')
-            }
-            not_none_static_provider_params = {k: v for k, v in params.items() if v is not None}
+            
             create_static_provider = (
-                self.__secondary_broker_connection.create_static_provider(**not_none_static_provider_params))
+                self.__secondary_broker_connection.create_static_provider(**self.data_dict))
             print(f"  {self.data_dict.get('name')} provider restore result: {create_static_provider}")
             created_provider_id = create_static_provider.get('id')
             return created_provider_id
@@ -112,13 +106,13 @@ class ServiceProvider:
         existing_id = self.__check_if_base_service_exist(legacy_base_service)
         if existing_id is None:
 
-            params = self.__get_base_service_params_by_type(legacy_base_service)
-            if params is not None:
+            created_provider_id, base_service_params = self.__get_base_service_params_by_type(legacy_base_service)
+            if created_provider_id is not None and base_service_params is not None:
 
-                print(f'  Creating supported base service: \"{legacy_base_service.get("name")}\" with params: {params}')
+                print(f'  Creating supported base service: \"{legacy_base_service.get("name")}\" with params: {base_service_params}')
                 if legacy_base_service.get('type') == 'IPMachinesService':
 
-                    created_service_result = self.__secondary_broker_connection.create_staticmultiple_service(**params)
+                    created_service_result = self.__secondary_broker_connection.create_staticmultiple_service(created_provider_id, **base_service_params)
 
                 if created_service_result == "":
 
@@ -138,30 +132,17 @@ class ServiceProvider:
         return created_service_id
 
     def __get_base_service_params_by_type(self, base_service):
-
+        supported_types = {'IPMachinesService'}
         params = None
+        created_provider_id = None
         created_provider_id = self.__old_to_new_ids_match_dict.get(self.data_dict.get('id'))
 
         if created_provider_id is None:
             print(f"    Not found created provider id for legacy id {self.data_dict.get('id')}")
 
-        elif base_service.get('type') == 'IPMachinesService':
-
-            params = {
-                'provider_id': created_provider_id,
-                'name': base_service['name'],
-                'comments': base_service['comments'],
-                'tags': base_service['tags'],
-                'iplist': base_service['ipList'],
-                'token': base_service['token'],
-                'port': base_service['port'],
-                'skipTimeOnFailure': base_service['skipTimeOnFailure'],
-                'maxSessionForMachine': base_service['maxSessionForMachine'],
-                'lockByExternalAccess': base_service['lockByExternalAccess'],
-            }
-            params = {k: v for k, v in params.items() if v is not None}
-
-        return params
+        elif base_service.get('type') in supported_types:
+            params =  base_service
+        return created_provider_id, params
 
     def __init__(self, primary_broker, service_pool_data):
 

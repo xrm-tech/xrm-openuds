@@ -262,6 +262,7 @@ in group_id_comparison={group_id_comparison_dict}")
         }
         if auth.get("type") in supported_auth_types :
             print(f'\n  Creating {auth.get("name")} with type {auth.get("type")}')
+            params = auth
         else:
             print(f'\nWarning: skipping unsupported authenticator {auth.get("name")}')
             params = None
@@ -275,6 +276,12 @@ in group_id_comparison={group_id_comparison_dict}")
             created_auth = self.__secondary_broker_connection.create_ad_auth(**params)
         if auth_type == INT_AUTH_TYPE:
             created_auth = self.__secondary_broker_connection.create_internal_auth(**params)
+        elif auth_type == 'RegexLdapAuthenticator':
+            created_auth = self.__secondary_broker_connection.create_regexldap_auth(**params)
+        elif auth_type == 'SimpleLdapAuthenticator':
+            created_auth = self.__secondary_broker_connection.create_simpleldap_auth(**params)
+        elif auth_type == 'SAML20Authenticator':
+            created_auth = self.__secondary_broker_connection.create_saml_auth(**params)
 
         print(f'  Created authenticator result: {created_auth}')
         return created_auth
