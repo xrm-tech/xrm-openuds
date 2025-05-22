@@ -117,7 +117,7 @@ class ServiceProvider:
                 if created_service_result == "":
 
                     existing_id = self.__check_if_base_service_exist(legacy_base_service)
-                    print(f'  Created \"{legacy_base_service.get("name")}\" successfully with new id {existing_id}')
+                    print(f'  Created \"{legacy_base_service.get("name")}\" successfully with new id {existing_id} old id is {legacy_base_service.get("id")}')
                 else:
                     print(f'  {created_service_result}')
 
@@ -127,8 +127,7 @@ class ServiceProvider:
         else:
 
             print(f'  This base service is already exist with id: {existing_id}, old id is {legacy_base_service.get("id")}')
-            created_service_id = existing_id
-
+        created_service_id = existing_id
         return created_service_id
 
     def __get_base_service_params_by_type(self, base_service):

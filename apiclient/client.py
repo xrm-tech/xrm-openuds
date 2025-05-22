@@ -212,7 +212,7 @@ class Client:
 
 #Providers
 
-    def create_static_provider(self, name: str, comments: str='', tags: list=[], config: str='', **kwargs):
+    def create_static_provider(self, name: str='', comments: str='', tags: list=[], config: str='', **kwargs):
         '''Создание сервис-провайдера Static IP Machines'''
         data = {
             'name': name,
@@ -226,8 +226,8 @@ class Client:
 
     def create_staticmultiple_service(
         self,
-        provider_id: str,
-        name: str,
+        provider_id,
+        name: str='',
         comments: str='',
         tags: list=[],
         iplist: list=[],
@@ -240,6 +240,8 @@ class Client:
     ):
         '''Создание базового сервиса Static Multiple IP'''
         data = {
+            #TODO: проверить влияние наличия этого параметра
+            'provider_id':provider_id,
             'name': name,
             'type': 'IPMachinesService',
             'comments': comments,
@@ -287,12 +289,12 @@ class Client:
 
     def create_ad_auth(
         self,
-        name: str,
-        label: str,
-        host: str,
-        username: str,
-        password: str,
-        ldapBase: str,
+        name: str='',
+        label: str='',
+        host: str='',
+        username: str='',
+        password: str='',
+        ldapBase: str='',
         comments: str='',
         tags: list=[],
         priority: int=1,
@@ -328,15 +330,15 @@ class Client:
 
     def create_internal_auth(
         self,
-        name: str,
-        comments: str,
-        tags: list,
-        priority: int,
-        label: str,
-        differentForEachHost: bool,
-        reverseDns: bool,
-        acceptProxy: bool,
-        visible: bool,
+        name: str='',
+        comments: str='',
+        tags: list=[],
+        priority: int=1,
+        label: str='',
+        differentForEachHost: bool= False,
+        reverseDns: bool= False,
+        acceptProxy: bool= False,
+        visible: bool= True,
         **kwargs
     ):
         '''Создание аутентификатора Internal Database'''
@@ -357,12 +359,12 @@ class Client:
 
     def create_regexldap_auth(
         self,
-        name: str,
-        label: str,
-        host: str,
-        username: str,
-        password: str,
-        ldapBase: str,
+        name: str='',
+        label: str='',
+        host: str='',
+        username: str='',
+        password: str='',
+        ldapBase: str='',
         comments: str='',
         tags: list=[],
         priority: int=1,
@@ -404,12 +406,12 @@ class Client:
 
     def create_simpleldap_auth(
         self,
-        name: str,
-        label: str,
-        host: str,
-        username: str,
-        password: str,
-        ldapBase: str,
+        name: str='',
+        label: str='',
+        host: str='',
+        username: str='',
+        password: str='',
+        ldapBase: str='',
         comments: str='',
         tags: list=[],
         priority: int=1,
@@ -453,14 +455,14 @@ class Client:
 
     def create_saml_auth(
         self,
-        name: str,
-        label: str,
-        privateKey: str,
-        serverCertificate: str,
-        idpMetadata: str,
-        userNameAttr: str,
-        groupNameAttr: str,
-        realNameAttr: str,
+        name: str='',
+        label: str='',
+        privateKey: str='',
+        serverCertificate: str='',
+        idpMetadata: str='',
+        userNameAttr: str='',
+        groupNameAttr: str='',
+        realNameAttr: str='',
         comments: str='',
         tags: list=[],
         priority: int=1,
@@ -494,8 +496,8 @@ class Client:
 
     def create_auth_group(
         self,
-        auth_id: str,
-        name: str,
+        auth_id: str='',
+        name: str='',
         comments: str = '',
         state: str = 'A',
         meta_if_any: bool = False,
@@ -520,8 +522,8 @@ class Client:
 
     def create_auth_user(
         self,
-        auth_id: str,
-        username: str,
+        auth_id: str='',
+        username: str='',
         realname: str = '',
         comments: str = '',
         state: str = 'A',
@@ -698,8 +700,8 @@ class Client:
 
     def create_pool(
         self,
-        name: str,
-        service_id: str,
+        name: str='',
+        service_id: str='',
         osmanager_id: str = None,
         short_name: str = '',
         comments: str = '',
@@ -839,10 +841,10 @@ class Client:
 
     def create_actor_token(
         self,
-        token: str,
-        ip: str,
-        hostname: str,
-        mac: str, 
+        token: str='',
+        ip: str='',
+        hostname: str='',
+        mac: str='',
         log_level: str = 'ERROR',
         pre_command: str = '',
         post_command: str = '',

@@ -40,5 +40,5 @@ def delete():
     runDelete.run(plan_name='1')
 
 generate()
-#failover()
-#delete()
+failover()
+delete()

@@ -29,84 +29,26 @@ class Transport:
 
     def __get_params_by_type(self, trans):
         not_none_transport_params = None
-        if trans.get('type') == DIRECT_RDP_TYPE:
+        supportedTypes = {DIRECT_RDP_TYPE, TUNNELED_RDP_TYPE}
 
-            params = {
-                'name': trans.get('name'),
-                'type': trans.get('type'),
-                'useEmptyCreds': trans.get('useEmptyCreds'),
-                'fixedName': trans.get('fixedName'),
-                'fixedPassword': trans.get('fixedPassword'),
-                'withoutDomain': trans.get('withoutDomain'),
-                'fixedDomain': trans.get('fixedDomain'),
-                'allowSmartcards': trans.get('allowSmartcards'),
-                'allowPrinters': trans.get('allowPrinters'),
-                'allowDrives': trans.get('allowDrives'),
-                'enforceDrives': trans.get('enforceDrives'),
-                'allowSerials': trans.get('allowSerials'),
-                'allowClipboard': trans.get('allowClipboard'),
-                'allowAudio': trans.get('allowAudio'),
-                'allowWebcam': trans.get('allowWebcam'),
-                'usbRedirection': trans.get('usbRedirection'),
-                'wallpaper': trans.get('wallpaper'),
-                'multimon': trans.get('multimon'),
-                'aero': trans.get('aero'),
-                'smooth': trans.get('smooth'),
-                'showConnectionBar': trans.get('showConnectionBar'),
-                'credssp': trans.get('credssp'),
-                'rdpPort': trans.get('rdpPort'),
-                'screenSize': trans.get('screenSize'),
-                'colorDepth': trans.get('colorDepth'),
-                'alsa': trans.get('alsa'),
-                'multimedia': trans.get('multimedia'),
-                'printerString': trans.get('printerString'),
-                'smartcardString': trans.get('smartcardString'),
-                'customParameters': trans.get('customParameters'),
-                'allowMacMSRDC': trans.get('allowMacMSRDC'),
-                'customParametersMAC': trans.get('customParametersMAC'),
-            }
-            not_none_transport_params = {k: str(v) for k, v in params.items() if v is not None}
+        if trans.get('type') in supportedTypes:
+            not_none_transport_params = trans.copy()
 
-        if trans.get('type') == TUNNELED_RDP_TYPE:
-            params = {
-                'name': trans.get('name'),
-                'type': trans.get('type'),
-                'useEmptyCreds': trans.get('useEmptyCreds'),
-                'fixedName': trans.get('fixedName'),
-                'fixedPassword': trans.get('fixedPassword'),
-                'withoutDomain': trans.get('withoutDomain'),
-                'fixedDomain': trans.get('fixedDomain'),
-                'allowSmartcards': trans.get('allowSmartcards'),
-                'allowPrinters': trans.get('allowPrinters'),
-                'allowDrives': trans.get('allowDrives'),
-                'enforceDrives': trans.get('enforceDrives'),
-                'allowSerials': trans.get('allowSerials'),
-                'allowClipboard': trans.get('allowClipboard'),
-                'allowAudio': trans.get('allowAudio'),
-                'allowWebcam': trans.get('allowWebcam'),
-                'usbRedirection': trans.get('usbRedirection'),
-                'wallpaper': trans.get('wallpaper'),
-                'multimon': trans.get('multimon'),
-                'aero': trans.get('aero'),
-                'smooth': trans.get('smooth'),
-                'showConnectionBar': trans.get('showConnectionBar'),
-                'credssp': trans.get('credssp'),
-                'rdpPort': trans.get('rdpPort'),
-                'screenSize': trans.get('screenSize'),
-                'colorDepth': trans.get('colorDepth'),
-                'alsa': trans.get('alsa'),
-                'multimedia': trans.get('multimedia'),
-                'printerString': trans.get('printerString'),
-                'smartcardString': trans.get('smartcardString'),
-                'customParameters': trans.get('customParameters'),
-                'allowMacMSRDC': trans.get('allowMacMSRDC'),
-                'customParametersMAC': trans.get('customParametersMAC'),
-
-                'tunnelServer': trans.get('tunnelServer'),
-                'tunnelWait': trans.get('tunnelWait'),
-                'verifyCertificate': trans.get('verifyCertificate'),
-            }
-            not_none_transport_params = {k: str(v) for k, v in params.items() if v is not None}
+            # Параметры, которые вызывают ошибку при их передаче
+            not_none_transport_params.pop('id', None)
+            not_none_transport_params.pop('pools_count', None) 
+            not_none_transport_params.pop('deployed_count', None) 
+            not_none_transport_params.pop('type_name', None)
+            not_none_transport_params.pop('protocol', None)
+            not_none_transport_params.pop('permission', None)
+            not_none_transport_params.pop('customParametersMACMS', None)
+            not_none_transport_params.pop('customParametersWindows', None)
+            not_none_transport_params.pop('serverCheck', None)
+            #Response: b"'bool' object has no attribute 'encode'"
+            not_none_transport_params.pop('allowDrives', None)
+            not_none_transport_params.pop('usbRedirection', None)
+            # Транспорты привязываются со стороны сервиспула
+            not_none_transport_params.pop('pools', None)
 
         return not_none_transport_params
 

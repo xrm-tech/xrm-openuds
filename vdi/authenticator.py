@@ -94,17 +94,9 @@ class Authenticator:
 
             print(f'\n  Creating {group_data.get("name")} group')
             print(f'    Group_data: {group_data}')
-            params = {
-                'auth_id': created_auth_id,
-                'name': group_data.get('name'),
-                'comments': group_data.get('comments'),
-                'state': group_data.get('state'),
-                'meta_if_any': group_data.get('meta_if_any'),
-                'pools': []
-            }
-            not_none_group_params = {k: v for k, v in params.items() if v is not None}
-            created_auth_group = self.__secondary_broker_connection.create_auth_group(
-                **not_none_group_params)
+            params = group_data.copy()
+            params.update({'auth_id': created_auth_id, 'pools': []})
+            created_auth_group = self.__secondary_broker_connection.create_auth_group(**params)
             group_name = group_data.get('name')
 
             if created_auth_group == '':
@@ -156,20 +148,12 @@ in group_id_comparison={group_id_comparison_dict}")
 
                                 created_groups_list.append(created_group_id)
 
-                    params = {
-                        'auth_id': created_auth_id,
-                        'username': user.get('name'),
-                        'realname': user.get('real_name'),
-                        'comments': user.get('comments'),
-                        'state': user.get('state'),
-                        'password': user.get('password'),
-                        'role': user.get('role'),
-                        'groups': created_groups_list,
-                    }
-                    not_none_user_params = {k: v for k, v in params.items() if v is not None}
+                    params = user.copy()
+                    params.update({'auth_id': created_auth_id, 'groups': created_groups_list})
+
                     print(f"        Trying to create user with params: {params}")
                     created_auth_user_result = (
-                        self.__secondary_broker_connection.create_auth_user(**not_none_user_params))
+                        self.__secondary_broker_connection.create_auth_user(**params))
 
 
                     if not created_auth_user_result:

@@ -103,28 +103,9 @@ class ServicePool:
 
     def __get_params_by_type(self, created_service_id):
         #TODO пока без анализа типа
-        params = {
-            'name': self.data_dict.get('name'),
-            'service_id': created_service_id,
-            'short_name': self.data_dict.get('short_name'),
-            'comments': self.data_dict.get('comments'),
-            'tags': self.data_dict.get('tags'),
-            'visible': self.data_dict.get('visible'),
-            'image_id': self.data_dict.get('image_id'),
-            'pool_group_id': self.data_dict.get('pool_group_id'),
-            'calendar_message': self.data_dict.get('calendar_message'),
-            'allow_users_remove': self.data_dict.get('allow_users_remove'),
-            'allow_users_reset': self.data_dict.get('allow_users_reset'),
-            'ignores_unused': self.data_dict.get('ignores_unused'),
-            'show_transports': self.data_dict.get('show_transports'),
-            'account_id': self.data_dict.get('account_id'),
-            'initial_srvs': self.data_dict.get('initial_srvs'),
-            'cache_l1_srvs': self.data_dict.get('cache_l1_srvs'),
-            'cache_l2_srvs': self.data_dict.get('cache_l2_srvs'),
-            'max_srvs': self.data_dict.get('max_srvs'),
-        }
-        not_none_auth_params = {k: v for k, v in params.items() if v is not None}
-        return not_none_auth_params
+        params = self.data_dict.copy()
+        params.update({'service_id':created_service_id})
+        return params
 
     def restore(self, created_base_service_ids, created_auth_group_ids, created_transport_ids, created_user_ids):
         '''
