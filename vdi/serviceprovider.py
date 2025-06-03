@@ -112,7 +112,7 @@ class ServiceProvider:
                 print(f'  Creating supported base service: \"{legacy_base_service.get("name")}\" with params: {base_service_params}')
                 if legacy_base_service.get('type') == 'IPMachinesService':
 
-                    created_service_result = self.__secondary_broker_connection.create_staticmultiple_service(created_provider_id, **base_service_params)
+                    created_service_result = self.__secondary_broker_connection.create_staticmultiple_service(provider_id=created_provider_id, **base_service_params)
 
                 if created_service_result == "":
 
