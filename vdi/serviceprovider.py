@@ -10,6 +10,7 @@ class ServiceProvider:
     __primary_broker_connection: apiclient.Client
     __secondary_broker_connection: apiclient.Client
     __old_to_new_ids_match_dict: dict
+    __base_service_linked_to_servpool_name: str
     data_dict: dict
     base_services_list = []
 
@@ -40,21 +41,28 @@ class ServiceProvider:
 
         return self.__old_to_new_ids_match_dict
 
-    def restore_base_services(self):
+    def restore_base_service(self):
         """
-        Восстановление базовых сервисов, которые были внутри провайдера"
+        Восстановление привязанного базового сервиса"
         """
+        
+        print(f' \nRestoring base service "{self.__base_service_linked_to_servpool_name}"')
+        for legacy_base_service in self.base_services_list:
+            
+            if legacy_base_service.get('name') == self.__base_service_linked_to_servpool_name:
+                existing_id = self.__check_if_base_service_exist(legacy_base_service)
+                if existing_id is None:
+                    print(f"  \nCreating base service {legacy_base_service.get('name')}")
+                    created_service_id = self.__create_base_service_by_type(legacy_base_service)
+                else:
+                    print(f'  This base service is already exist with id: {existing_id}, old id is {legacy_base_service.get("id")}')
+                    created_service_id = existing_id
 
-        created_services = {}
-        for base_service in self.base_services_list:
-            created_id = self.__create_base_service(base_service)
-            if created_id not in created_services.values() and created_id is not None:
-                created_services[base_service.get("id")] = created_id
-
-        '''
-        old id to new
-        '''
-        return created_services
+                '''
+                old id to new
+                '''
+                return {legacy_base_service.get('id'):created_service_id}
+        return None
 
     def __check_if_provider_exist(self):
 
@@ -83,65 +91,80 @@ class ServiceProvider:
 
     def __create_provider_by_type(self):
 
+        SUPPORTED_TYPES = {"Static IP Machines Provider", "oVirt/RHEV Platform Provider"}    
         provider_type = self.data_dict.get('type_name')
-        if provider_type == 'Static IP Machines Provider':
-
+        created_provider = None
+        
+        if provider_type in SUPPORTED_TYPES:
             print(f'  Supported provider type: {provider_type}')
+
+            if provider_type == 'Static IP Machines Provider':                
+                created_provider = (
+                    self.__secondary_broker_connection.create_static_provider(**self.data_dict))         
             
-            create_static_provider = (
-                self.__secondary_broker_connection.create_static_provider(**self.data_dict))
-            print(f"  {self.data_dict.get('name')} provider restore result: {create_static_provider}")
-            created_provider_id = create_static_provider.get('id')
-            return created_provider_id
+            elif provider_type == 'oVirt/RHEV Platform Provider':     
+                data_dict_copy = self.data_dict.copy()
+                data_dict_copy.pop("id", None)
+                data_dict_copy.pop("name", None)
+                data_dict_copy.pop("services_count", None)
+                data_dict_copy.pop("user_services_count", None)
+                data_dict_copy.pop("maintenance_mode", None)
+                data_dict_copy.pop("offers", None)
+                data_dict_copy.pop("type_name", None)
+                data_dict_copy.pop("permission", None)
+                print(data_dict_copy)
+
+                created_provider = (
+                    self.__secondary_broker_connection.create_ovirt_provider(name = self.data_dict.get('name'), **data_dict_copy)) 
+
+            print(f"  {self.data_dict.get('name')} provider restore result: {created_provider}")          
         else:
 
             print(f'  Unsupported provider type: {provider_type}, skipping...')
-            return None
+        return created_provider.get('id')
 
-    def __create_base_service(self, legacy_base_service):
-
-        print(f"\nCreating base service \"{legacy_base_service.get('name')}\"")
-        created_service_id = None
-        created_service_result = "Type supported but filtered on create for some reason...Skipping"
-        existing_id = self.__check_if_base_service_exist(legacy_base_service)
-        if existing_id is None:
-
-            created_provider_id, base_service_params = self.__get_base_service_params_by_type(legacy_base_service)
-            if created_provider_id is not None and base_service_params is not None:
-
-                print(f'  Creating supported base service: \"{legacy_base_service.get("name")}\" with params: {base_service_params}')
-                if legacy_base_service.get('type') == 'IPMachinesService':
-
-                    created_service_result = self.__secondary_broker_connection.create_staticmultiple_service(provider_id=created_provider_id, **base_service_params)
-
-                if created_service_result == "":
-
-                    existing_id = self.__check_if_base_service_exist(legacy_base_service)
-                    print(f'  Created \"{legacy_base_service.get("name")}\" successfully with new id {existing_id} old id is {legacy_base_service.get("id")}')
-                else:
-                    print(f'  {created_service_result}')
-
-            else:
-
-                print(f'  Unsupported base service: \"{legacy_base_service.get("name")}\" with type \"{legacy_base_service.get("type")}\"')
-        else:
-
-            print(f'  This base service is already exist with id: {existing_id}, old id is {legacy_base_service.get("id")}')
-        created_service_id = existing_id
-        return created_service_id
-
-    def __get_base_service_params_by_type(self, base_service):
-        supported_types = {'IPMachinesService'}
-        params = None
-        created_provider_id = None
+    def __create_base_service_by_type(self, legacy_base_service:dict):
+        SUPPORTED_TYPES = {'IPMachinesService','oVirtLinkedService','oVirtFixedService'}
+        base_service_type = legacy_base_service.get('type')
         created_provider_id = self.__old_to_new_ids_match_dict.get(self.data_dict.get('id'))
 
-        if created_provider_id is None:
-            print(f"    Not found created provider id for legacy id {self.data_dict.get('id')}")
+        if base_service_type in SUPPORTED_TYPES:            
+            
+            if created_provider_id is not None:
+                base_service_copy = legacy_base_service.copy()
+                fields_to_remove = [
+                    "id","type_name", "type", "proxy", "deployed_services_count",
+                    "user_services_count", "maintenance_mode", "permission",
+                    "info", "ov", "ev"
+                ]
+                for field in fields_to_remove:
+                    base_service_copy.pop(field, None)            
 
-        elif base_service.get('type') in supported_types:
-            params =  base_service
-        return created_provider_id, params
+                if base_service_type == 'IPMachinesService':
+                    created_base_service = self.__secondary_broker_connection.create_staticmultiple_service(provider_id=created_provider_id, **base_service_copy)
+                
+                elif base_service_type == 'oVirtFixedService':
+                    if 'machine' in base_service_copy and isinstance(base_service_copy['machine'], list):
+                        base_service_copy['machine'] = [vm['id'] for vm in base_service_copy['machine']]                
+                    created_base_service = self.__secondary_broker_connection.create_ovirtfixed_service(provider_id=created_provider_id, **base_service_copy)
+                
+                elif base_service_type == 'oVirtLinkedService':  
+                     
+                    created_base_service = self.__secondary_broker_connection.create_ovirtlinked_service(provider_id=created_provider_id, **base_service_copy)  
+                
+                base_services_list = self.__secondary_broker_connection.list_provider_services(created_provider_id)
+                print(base_services_list)
+                for base_service in base_services_list:
+                    print(base_service)
+                    if base_service.get('name') == legacy_base_service.get('name'):
+                        created_base_Service_id = base_service.get('id')
+                        print(f"  Created base service id: {created_base_service}")
+                        return created_base_Service_id
+                print("  Warning: Cant find base service after creation")
+            else:
+                print(f"    Not found created provider id for legacy id {self.data_dict.get('id')}")
+        else:
+            print(f'  Unsupported base service: \"{legacy_base_service.get("name")}\" with type \"{legacy_base_service.get("type")}\"')    
 
     def __init__(self, primary_broker, service_pool_data):
 
@@ -149,6 +172,7 @@ class ServiceProvider:
         self.legacy_id = service_pool_data.get('provider_id')
         self.data_dict = primary_broker.get_provider(self.legacy_id)
         self.base_services_list = self.__get_provider_base_services()
+        self.__base_service_linked_to_servpool_name = service_pool_data.get('parent')
 
     def __get_provider_base_services(self):
 

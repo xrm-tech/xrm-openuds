@@ -18,7 +18,8 @@ def generate():
         '06_broker_secondary_username':'root',
         '07_broker_secondary_authenticator':'admin',
         '08_broker_secondary_password':'udsmam0',
-        '09_service_pool_name':'multistatic-service'
+        #'09_service_pool_name':'w10-fixed;multistatic-service-frst;multistatic-service-scnd'
+        '09_service_pool_name':'w10-fixed;'
     }
     runGenerate.packs_path=r'C:\Users\Anakim\Documents\xrm-vdi-pack\.saved'
     runGenerate.run(plan_name= '1')
@@ -41,4 +42,4 @@ def delete():
 
 generate()
 failover()
-delete()
+#delete()

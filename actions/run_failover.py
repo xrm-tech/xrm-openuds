@@ -53,14 +53,14 @@ class RunFailOver(Action):
 
                 service_provider.set_connection(secondary_broker_connection=dst_broker_connection)
                 created_provider_id = service_provider.restore()
-                created_base_services_id = service_provider.restore_base_services()
+                created_base_service_id = service_provider.restore_base_service()
 
                 transport.set_connection(secondary_broker_connection=dst_broker_connection)
                 created_transport_ids = transport.restore()
 
                 service_pool.set_connection(secondary_broker_connection=dst_broker_connection)
                 created_service_pool_id = service_pool.restore(
-                    created_base_service_ids=created_base_services_id,
+                    created_base_service_ids=created_base_service_id,
                     created_auth_group_ids=created_group_ids,
                     created_transport_ids=created_transport_ids,
                     created_user_ids=created_user_ids,
