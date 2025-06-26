@@ -79,10 +79,18 @@ class ServicePool:
         Назначение сервисов пользователям
         '''
         print(f"  Assigning users to services")
+        OVIRT_FIXED = 'oVirtFixedService'
         for assigned_service in self.assigned_services_list:
             legacy_owner_id = assigned_service.get('owner_info').get('user_id')
             if legacy_owner_id in created_user_ids:
-                unique_id = assigned_service.get('unique_id')
+                if self.data_dict.get('parent_type') == OVIRT_FIXED:
+                    created_pool_assignables = self.__secondary_broker_connection.list_pool_assignables(created_servicepool_id)
+                    friendly_name = assigned_service.get('friendly_name')
+                    assignable = next((item for item in created_pool_assignables if item['text'] == friendly_name), None)
+                    unique_id = assignable.get('id')
+                else:                 
+                    unique_id = assigned_service.get('unique_id')
+                                
                 assign_result = self.__secondary_broker_connection.assign_pool_service(
                     pool_id=created_servicepool_id,
                     user_id=created_user_ids.get(legacy_owner_id),
