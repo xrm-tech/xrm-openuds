@@ -158,7 +158,7 @@ class ServiceProvider:
                     print(base_service)
                     if base_service.get('name') == legacy_base_service.get('name'):
                         created_base_Service_id = base_service.get('id')
-                        print(f"  Created base service id: {created_base_service}")
+                        print(f"  Created base service id: {created_base_Service_id}")
                         return created_base_Service_id
                 print("  Warning: Cant find base service after creation")
             else:
