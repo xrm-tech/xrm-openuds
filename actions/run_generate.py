@@ -22,7 +22,10 @@ class RunGenerate(Action):
                                  dst_broker_ip,
                                  dst_broker_auth,
                                  dst_broker_user,
-                                 dst_broker_pwd, 
+                                 dst_broker_pwd,
+                                 dst_ovirt_fqdn,
+                                 dst_ovirt_user,
+                                 dst_ovirt_pwd, 
                                  sn):
         
         spl = ServicePool(
@@ -69,7 +72,11 @@ class RunGenerate(Action):
             'dst_broker_user': dst_broker_user,
             'dst_broker_auth': dst_broker_auth,            
             'dst_broker_pwd': dst_broker_pwd, 
-
+            
+            'dst_ovirt_fqdn': dst_ovirt_fqdn,
+            'dst_ovirt_user': dst_ovirt_user,
+            'dst_ovirt_pwd': dst_ovirt_pwd,
+            
             'service_name': sn,
             'service_pool': spl,
             'service_provider': spr,
@@ -127,7 +134,10 @@ class RunGenerate(Action):
                         dst_broker_ip= self.config['05_broker_secondary_ip'],
                         dst_broker_user= self.config['06_broker_secondary_username'],
                         dst_broker_pwd= self.config['08_broker_secondary_password'],
-                        dst_broker_auth= self.config['07_broker_secondary_authenticator'])
+                        dst_broker_auth= self.config['07_broker_secondary_authenticator'],
+                        dst_ovirt_fqdn= self.config['10_ovirt_secondary_fqdn'],
+                        dst_ovirt_user= self.config['11_ovirt_secondary_username'],
+                        dst_ovirt_pwd= self.config['12_ovirt_secondary_password'],)
                     
                     if service_pool_data:                       
                         service_pools_data_list.append(service_pool_data)         

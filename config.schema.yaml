@@ -49,3 +49,21 @@
     default: "ServicePoolName"
     required: true
     secret: false
+  10_ovirt_secondary_fqdn:
+    description: "oVirt secondary site manager FQND"
+    type: "string"
+    default: "ovirt2.localdomain"
+    required: false
+    secret: false
+  11_ovirt_secondary_username:
+    description: "oVirt secondary site manager username"
+    type: "string"
+    default: "admin@internal"
+    required: false
+    secret: false
+  12_ovirt_secondary_password:
+    description: "oVirt secondary site manager password"
+    type: "string"
+    default: "password"
+    required: false
+    secret: true

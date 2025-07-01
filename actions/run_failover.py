@@ -32,6 +32,10 @@ class RunFailOver(Action):
                 dst_broker_auth = plan_data_dict['dst_broker_auth']
                 dst_broker_pwd = plan_data_dict['dst_broker_pwd']
 
+                dst_ovirt_fqdn = plan_data_dict['dst_ovirt_fqdn']
+                dst_ovirt_user = plan_data_dict['dst_ovirt_user']
+                dst_ovirt_pwd = plan_data_dict['dst_ovirt_pwd']
+
                 print(f'\nTrying to send "{service_name}" data to secondary broker')
 
                 dst_broker_connection = Client(
