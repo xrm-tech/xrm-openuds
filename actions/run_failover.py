@@ -21,11 +21,12 @@ class RunFailOver(Action):
         for plan_index, plan_data_dict in enumerate(plan_data_list_param):
             try:
                 service_name = plan_data_dict['service_name']
-                service_pool = plan_data_dict['service_pool']
-                service_provider = plan_data_dict['service_provider']
-                authenticator = plan_data_dict['authenticator']
-                transport = plan_data_dict['transport']
-                permissions = plan_data_dict['permissions']
+                service_pool: ServicePool = plan_data_dict['service_pool']
+                service_provider: ServiceProvider = plan_data_dict['service_provider']
+                authenticator: Authenticator = plan_data_dict['authenticator']
+                transport: Transport = plan_data_dict['transport']
+                osmanager: OSManager = plan_data_dict['osmanager']
+                permissions: Permissions = plan_data_dict['permissions']
 
                 dst_broker_ip = plan_data_dict['dst_broker_ip']
                 dst_broker_user = plan_data_dict['dst_broker_user']
@@ -53,14 +54,22 @@ class RunFailOver(Action):
                     единожды за план восстановления
                     '''
                     authenticator.set_connection(secondary_broker_connection=dst_broker_connection)
-                    created_auth_ids, created_group_ids, created_user_ids = authenticator.restore()
-
+                    created_auth_ids, created_group_ids, created_user_ids = authenticator.restore()            
                 service_provider.set_connection(secondary_broker_connection=dst_broker_connection)
-                created_provider_id = service_provider.restore()
+                ovirt_params = (
+                    {"dst_ovirt_fqdn": dst_ovirt_fqdn, "dst_ovirt_user": dst_ovirt_user, "dst_ovirt_pwd": dst_ovirt_pwd}
+                    if service_pool.parent_type == "oVirtLinkedService"
+                    else {}
+                )
+                created_provider_id = service_provider.restore(**ovirt_params)
+
                 created_base_service_id = service_provider.restore_base_service()
 
                 transport.set_connection(secondary_broker_connection=dst_broker_connection)
                 created_transport_ids = transport.restore()
+
+                osmanager.set_connection(secondary_broker_connection=dst_broker_connection)
+                created_osmanager_id = osmanager.restore()
 
                 service_pool.set_connection(secondary_broker_connection=dst_broker_connection)
                 created_service_pool_id = service_pool.restore(
@@ -68,6 +77,7 @@ class RunFailOver(Action):
                     created_auth_group_ids=created_group_ids,
                     created_transport_ids=created_transport_ids,
                     created_user_ids=created_user_ids,
+                    created_osmanager_id=created_osmanager_id, 
                 )
 
 

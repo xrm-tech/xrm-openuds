@@ -33,7 +33,7 @@ class RunGenerate(Action):
             pool_name=sn
         )
         spl.get_logs()    
-
+        
         spr = ServiceProvider(
             primary_broker=src_broker_connection_param,
             service_pool_data=spl.data_dict
@@ -52,6 +52,12 @@ class RunGenerate(Action):
             pool_transports_list=spl.transports_list
         )
         t.get_logs()
+
+        os = OSManager(
+            primary_broker=src_broker_connection_param,
+            id=spl.os_manager_id    
+        )
+        os.get_logs()
 
         p = Permissions(
             primary_broker=src_broker_connection_param,
@@ -82,6 +88,7 @@ class RunGenerate(Action):
             'service_provider': spr,
             'authenticator': a,
             'transport': t,
+            'osmanager': os,
             'permissions': p
         }
 

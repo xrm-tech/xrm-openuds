@@ -6,7 +6,9 @@ class ServicePool:
 
     perm_class= 'servicespools'
     name:str
+    parent_type:str
     id:str
+    os_manager_id:str
     data_dict:dict
     groups_list:list
     transports_list:list
@@ -19,6 +21,8 @@ class ServicePool:
         self.name= pool_name
         self.id= primary_broker.get_pool_id(pool_name)
         self.data_dict= primary_broker.get_pool(self.id)
+        self.os_manager_id= self.data_dict.get("osmanager_id")
+        self.parent_type= self.data_dict.get("parent_type")
         self.groups_list= primary_broker.list_pool_groups(self.id)
         self.transports_list= primary_broker.list_pool_transports(self.id)
         __unfiltered_assigned_services_list= primary_broker.list_pool_assigned_services(self.id)
@@ -109,13 +113,15 @@ class ServicePool:
         else:
             return False
 
-    def __get_params_by_type(self, created_service_id):
+    def __get_params_by_type(self, created_service_id, created_osmanager_id):
         #TODO пока без анализа типа
         params = self.data_dict.copy()
         params.update({'service_id':created_service_id})
+        if created_osmanager_id is not None:
+            params.update({"osmanager_id": created_osmanager_id})
         return params
 
-    def restore(self, created_base_service_ids, created_auth_group_ids, created_transport_ids, created_user_ids):
+    def restore(self, created_base_service_ids, created_auth_group_ids, created_transport_ids, created_user_ids, created_osmanager_id):
         '''
         Создание сервис-пулов
         '''
@@ -126,7 +132,7 @@ class ServicePool:
         )
         if created_service_id is not None:
             print("  Found required base service")
-            params = self.__get_params_by_type(created_service_id)
+            params = self.__get_params_by_type(created_service_id, created_osmanager_id)
             created_service_pool = self.__secondary_broker_connection.create_pool(**params)
             created_service_pool_id = created_service_pool.get('id')
             print(f"  Created service pool {self.name}\n  Result: {created_service_pool}")
