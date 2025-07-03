@@ -26,6 +26,7 @@ class RunFailOver(Action):
                 authenticator: Authenticator = plan_data_dict['authenticator']
                 transport: Transport = plan_data_dict['transport']
                 osmanager: OSManager = plan_data_dict['osmanager']
+                actor_tokens: ActorTokens = plan_data_dict['actor_tokens']
                 permissions: Permissions = plan_data_dict['permissions']
 
                 dst_broker_ip = plan_data_dict['dst_broker_ip']
@@ -50,11 +51,14 @@ class RunFailOver(Action):
 
                 if plan_index == 0:
                     '''
-                    Аутентификаторы восстанавливаются сразу все, из тех что поддерживаются, это действие выполняется
+                    Аутентификаторы и токены восстанавливаются сразу все, из тех что поддерживаются, это действие выполняется
                     единожды за план восстановления
                     '''
                     authenticator.set_connection(secondary_broker_connection=dst_broker_connection)
-                    created_auth_ids, created_group_ids, created_user_ids = authenticator.restore()            
+                    actor_tokens.set_connection(secondary_broker_connection=dst_broker_connection)
+                    created_auth_ids, created_group_ids, created_user_ids = authenticator.restore()      
+                    actor_tokens.restore()
+
                 service_provider.set_connection(secondary_broker_connection=dst_broker_connection)
                 ovirt_params = (
                     {"dst_ovirt_fqdn": dst_ovirt_fqdn, "dst_ovirt_user": dst_ovirt_user, "dst_ovirt_pwd": dst_ovirt_pwd}

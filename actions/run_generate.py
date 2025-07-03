@@ -59,6 +59,11 @@ class RunGenerate(Action):
         )
         os.get_logs()
 
+        tokens = ActorTokens(
+            primary_broker=src_broker_connection_param
+        )
+        tokens.get_logs()
+
         p = Permissions(
             primary_broker=src_broker_connection_param,
             service_pool_param=spl,
@@ -89,7 +94,8 @@ class RunGenerate(Action):
             'authenticator': a,
             'transport': t,
             'osmanager': os,
-            'permissions': p
+            'permissions': p,
+            'actor_tokens': tokens,
         }
 
         return service_data
