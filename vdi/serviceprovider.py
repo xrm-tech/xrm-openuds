@@ -14,7 +14,12 @@ class ServiceProvider:
     data_dict: dict
     base_services_list = []
 
-    def restore(self):
+    def restore(
+            self,
+            dst_ovirt_fqdn: str = None,
+            dst_ovirt_user: str = None,
+            dst_ovirt_pwd: str = None   
+    ):
         """
         Восстановление Сервис-провайдера, если такого (имя+тип) еще нет
         """
@@ -30,7 +35,7 @@ class ServiceProvider:
 
         else:
             print(f'  Not found existing provider \"{self.data_dict.get("name")}\", need to create new one')
-            created_provider_id = self.__create_provider_by_type()
+            created_provider_id = self.__create_provider_by_type(dst_ovirt_fqdn=dst_ovirt_fqdn, dst_ovirt_user=dst_ovirt_user, dst_ovirt_pwd=dst_ovirt_pwd)
             if created_provider_id is not None:
 
                 self.__old_to_new_ids_match_dict.update({
@@ -53,7 +58,7 @@ class ServiceProvider:
                 existing_id = self.__check_if_base_service_exist(legacy_base_service)
                 if existing_id is None:
                     print(f"  \nCreating base service {legacy_base_service.get('name')}")
-                    created_service_id = self.__create_base_service_by_type(legacy_base_service)
+                    created_service_id = self.__create_base_service_by_type(legacy_base_service=legacy_base_service)
                 else:
                     print(f'  This base service is already exist with id: {existing_id}, old id is {legacy_base_service.get("id")}')
                     created_service_id = existing_id
@@ -89,7 +94,7 @@ class ServiceProvider:
 
         return None
 
-    def __create_provider_by_type(self):
+    def __create_provider_by_type(self, dst_ovirt_fqdn, dst_ovirt_user, dst_ovirt_pwd):
 
         SUPPORTED_TYPES = {"Static IP Machines Provider", "oVirt/RHEV Platform Provider"}    
         provider_type = self.data_dict.get('type_name')
@@ -113,9 +118,14 @@ class ServiceProvider:
                 data_dict_copy.pop("type_name", None)
                 data_dict_copy.pop("permission", None)
                 print(data_dict_copy)
-
-                created_provider = (
-                    self.__secondary_broker_connection.create_ovirt_provider(name = self.data_dict.get('name'), **data_dict_copy)) 
+                if dst_ovirt_fqdn and dst_ovirt_user and dst_ovirt_pwd:
+                    data_dict_copy.update({
+                        "host":dst_ovirt_fqdn,
+                        "username":dst_ovirt_user,
+                        "password":dst_ovirt_pwd,
+                        })    
+                    created_provider = (
+                        self.__secondary_broker_connection.create_ovirt_provider(name = self.data_dict.get('name'), **data_dict_copy)) 
 
             print(f"  {self.data_dict.get('name')} provider restore result: {created_provider}")          
         else:
@@ -148,8 +158,7 @@ class ServiceProvider:
                         base_service_copy['machine'] = [vm['id'] for vm in base_service_copy['machine']]                
                     created_base_service = self.__secondary_broker_connection.create_ovirtfixed_service(provider_id=created_provider_id, **base_service_copy)
                 
-                elif base_service_type == 'oVirtLinkedService':  
-                     
+                elif base_service_type == 'oVirtLinkedService':
                     created_base_service = self.__secondary_broker_connection.create_ovirtlinked_service(provider_id=created_provider_id, **base_service_copy)  
                 
                 base_services_list = self.__secondary_broker_connection.list_provider_services(created_provider_id)

@@ -78,35 +78,41 @@ class ServicePool:
                 print(f"  Warning! Not found created transport \"{trans.get('name')}\" with old id: {trans.get('id')}. "
                       f"  Cannot attach it to servicepool... Check if type in transport.__create_transport_by_type")
 
-    def __attach_users(self, created_servicepool_id, created_user_ids):
+    def __attach_users_if_required(self, created_servicepool_id, created_user_ids):
         '''
         Назначение сервисов пользователям
         '''
         print(f"  Assigning users to services")
         OVIRT_FIXED = 'oVirtFixedService'
-        for assigned_service in self.assigned_services_list:
-            legacy_owner_id = assigned_service.get('owner_info').get('user_id')
-            if legacy_owner_id in created_user_ids:
-                if self.data_dict.get('parent_type') == OVIRT_FIXED:
-                    created_pool_assignables = self.__secondary_broker_connection.list_pool_assignables(created_servicepool_id)
-                    friendly_name = assigned_service.get('friendly_name')
-                    assignable = next((item for item in created_pool_assignables if item['text'] == friendly_name), None)
-                    unique_id = assignable.get('id')
-                else:                 
-                    unique_id = assigned_service.get('unique_id')
-                                
-                assign_result = self.__secondary_broker_connection.assign_pool_service(
-                    pool_id=created_servicepool_id,
-                    user_id=created_user_ids.get(legacy_owner_id),
-                    assignable_id=unique_id
-                )
-                if assign_result:
-                    print(f"  Assigned service successfully for user \"{assigned_service.get('owner')}\"")
-                else:
-                    print(f"  Some error when attaching user...")
+        OVIRT_LINKED = 'oVirtLinkedService'
+        
+        if self.parent_type == OVIRT_LINKED:
+            print("    Not required for this ServicePool type, skipping.")
+        else:
+            for assigned_service in self.assigned_services_list:
+                legacy_owner_id = assigned_service.get('owner_info').get('user_id')
+                if legacy_owner_id in created_user_ids:
+                    if self.data_dict.get('parent_type') == OVIRT_FIXED:
+                        created_pool_assignables = self.__secondary_broker_connection.list_pool_assignables(created_servicepool_id)
+                        friendly_name = assigned_service.get('friendly_name')
+                        assignable = next((item for item in created_pool_assignables if item['text'] == friendly_name), None)
+                        unique_id = assignable.get('id')
+                    else:                 
+                        unique_id = assigned_service.get('unique_id')
+                                    
+                    assign_result = self.__secondary_broker_connection.assign_pool_service(
+                        pool_id=created_servicepool_id,
+                        user_id=created_user_ids.get(legacy_owner_id),
+                        assignable_id=unique_id
+                    )
+                    if assign_result:
+                        print(f"  Assigned service successfully for user \"{assigned_service.get('owner')}\"")
+                    else:
+                        print(f"  Some error when attaching user...")
 
-            else:
-                print(f"    Cant find user with old id {legacy_owner_id}...skipping")
+                else:
+                    print(f"    Cant find user with old id {legacy_owner_id}...skipping")
+
     def __filter_valid_services(self, assigned_service):
         if assigned_service['state'] == 'U':
             return True
@@ -141,11 +147,22 @@ class ServicePool:
 
             self.__attach_transports(created_transport_ids, created_service_pool_id)
 
-            self.__attach_users(created_service_pool_id, created_user_ids)
+            self.__attach_users_if_required(created_service_pool_id, created_user_ids)
+
+            self.__publicate_if_required(created_service_pool_id)
+            
             return created_service_pool_id
 
         else:
             print(f"  Not found required base service with old id: {self.data_dict.get('service_id')} (m.b. not supported?)")
+
+    def __publicate_if_required(self, pool_id):
+        OVIRT_LINKED = "oVirtLinkedService"
+        if self.parent_type == OVIRT_LINKED:
+            print("  ServicePool publication requested")
+            self.__secondary_broker_connection.publish_pool(pool_id)
+        else:
+            print("  ServicePool publication not required")
 
     def set_connection(self, secondary_broker_connection):
         self.__secondary_broker_connection = secondary_broker_connection
