@@ -67,3 +67,21 @@
     default: "password"
     required: false
     secret: true
+  13_ovirt_secondary_cluster_uuid:
+    description: "oVirt secondary site Cluster UUID"
+    type: "string"
+    default: ""
+    required: false
+    secret: false
+  14_ovirt_secondary_storagedomain_uuid:
+    description: "oVirt secondary site Storage Domain UUID"
+    type: "string"
+    default: ""
+    required: false
+    secret: false
+  15_ovirt_secondary_golden_vm_uuid:
+    description: "Golden image of a virtual machine UUID for the oVirt secondary site"
+    type: "string"
+    default: ""
+    required: false
+    secret: false

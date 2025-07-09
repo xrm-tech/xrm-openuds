@@ -25,7 +25,10 @@ class RunGenerate(Action):
                                  dst_broker_pwd,
                                  dst_ovirt_fqdn,
                                  dst_ovirt_user,
-                                 dst_ovirt_pwd, 
+                                 dst_ovirt_pwd,
+                                 dst_ovirt_cluster_uuid,
+                                 dst_ovirt_sd_uuid,
+                                 dst_ovirt_golden_vm_uuid, 
                                  sn):
         
         spl = ServicePool(
@@ -87,6 +90,9 @@ class RunGenerate(Action):
             'dst_ovirt_fqdn': dst_ovirt_fqdn,
             'dst_ovirt_user': dst_ovirt_user,
             'dst_ovirt_pwd': dst_ovirt_pwd,
+            'dst_ovirt_cluster_uuid' : dst_ovirt_cluster_uuid,
+            'dst_ovirt_sd_uuid': dst_ovirt_sd_uuid,
+            'dst_ovirt_golden_vm_uuid': dst_ovirt_golden_vm_uuid,
             
             'service_name': sn,
             'service_pool': spl,
@@ -150,7 +156,10 @@ class RunGenerate(Action):
                         dst_broker_auth= self.config['07_broker_secondary_authenticator'],
                         dst_ovirt_fqdn= self.config['10_ovirt_secondary_fqdn'],
                         dst_ovirt_user= self.config['11_ovirt_secondary_username'],
-                        dst_ovirt_pwd= self.config['12_ovirt_secondary_password'],)
+                        dst_ovirt_pwd= self.config['12_ovirt_secondary_password'],
+                        dst_ovirt_cluster_uuid= self.config['13_ovirt_secondary_cluster_uuid'],
+                        dst_ovirt_sd_uuid= self.config['14_ovirt_secondary_storagedomain_uuid'],
+                        dst_ovirt_golden_vm_uuid= self.config['15_ovirt_secondary_golden_vm_uuid'],)
                     
                     if service_pool_data:                       
                         service_pools_data_list.append(service_pool_data)         

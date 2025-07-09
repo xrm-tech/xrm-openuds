@@ -37,6 +37,9 @@ class RunFailOver(Action):
                 dst_ovirt_fqdn = plan_data_dict['dst_ovirt_fqdn']
                 dst_ovirt_user = plan_data_dict['dst_ovirt_user']
                 dst_ovirt_pwd = plan_data_dict['dst_ovirt_pwd']
+                dst_ovirt_cluster_uuid = plan_data_dict['dst_ovirt_cluster_uuid']
+                dst_ovirt_sd_uuid = plan_data_dict['dst_ovirt_sd_uuid']
+                dst_ovirt_golden_vm_uuid = plan_data_dict['dst_ovirt_golden_vm_uuid']
 
                 print(f'\nTrying to send "{service_name}" data to secondary broker')
 
@@ -60,14 +63,30 @@ class RunFailOver(Action):
                     actor_tokens.restore()
 
                 service_provider.set_connection(secondary_broker_connection=dst_broker_connection)
-                ovirt_params = (
-                    {"dst_ovirt_fqdn": dst_ovirt_fqdn, "dst_ovirt_user": dst_ovirt_user, "dst_ovirt_pwd": dst_ovirt_pwd}
+                ovirt_provider_params = (
+                    {
+                        "dst_ovirt_fqdn": dst_ovirt_fqdn,
+                        "dst_ovirt_user": dst_ovirt_user,
+                        "dst_ovirt_pwd": dst_ovirt_pwd,
+                        "dst_ovirt_cluster_uuid": dst_ovirt_cluster_uuid,
+                        "dst_ovirt_sd_uuid": dst_ovirt_sd_uuid,
+                        "dst_ovirt_golden_vm_uuid": dst_ovirt_golden_vm_uuid,
+                    }
                     if service_pool.parent_type == "oVirtLinkedService"
                     else {}
                 )
-                created_provider_id = service_provider.restore(**ovirt_params)
+                ovirt_baseservice_params = (
+                    {
+                        "dst_ovirt_cluster_uuid": dst_ovirt_cluster_uuid,
+                        "dst_ovirt_sd_uuid": dst_ovirt_sd_uuid,
+                        "dst_ovirt_golden_vm_uuid": dst_ovirt_golden_vm_uuid,
+                    }
+                    if service_pool.parent_type == "oVirtLinkedService"
+                    else {}
+                )
+                created_provider_id = service_provider.restore(**ovirt_provider_params)
 
-                created_base_service_id = service_provider.restore_base_service()
+                created_base_service_id = service_provider.restore_base_service(**ovirt_baseservice_params)
 
                 transport.set_connection(secondary_broker_connection=dst_broker_connection)
                 created_transport_ids = transport.restore()

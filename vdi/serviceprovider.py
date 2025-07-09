@@ -18,7 +18,11 @@ class ServiceProvider:
             self,
             dst_ovirt_fqdn: str = None,
             dst_ovirt_user: str = None,
-            dst_ovirt_pwd: str = None   
+            dst_ovirt_pwd: str = None,
+            dst_ovirt_cluster_uuid: str = None,
+            dst_ovirt_sd_uuid: str = None,
+            dst_ovirt_golden_vm_uuid: str = None,
+
     ):
         """
         Восстановление Сервис-провайдера, если такого (имя+тип) еще нет
@@ -35,7 +39,11 @@ class ServiceProvider:
 
         else:
             print(f'  Not found existing provider \"{self.data_dict.get("name")}\", need to create new one')
-            created_provider_id = self.__create_provider_by_type(dst_ovirt_fqdn=dst_ovirt_fqdn, dst_ovirt_user=dst_ovirt_user, dst_ovirt_pwd=dst_ovirt_pwd)
+            created_provider_id = self.__create_provider_by_type(
+                dst_ovirt_fqdn=dst_ovirt_fqdn, 
+                dst_ovirt_user=dst_ovirt_user, 
+                dst_ovirt_pwd=dst_ovirt_pwd, 
+            )
             if created_provider_id is not None:
 
                 self.__old_to_new_ids_match_dict.update({
@@ -46,7 +54,7 @@ class ServiceProvider:
 
         return self.__old_to_new_ids_match_dict
 
-    def restore_base_service(self):
+    def restore_base_service(self, dst_ovirt_cluster_uuid:str = None, dst_ovirt_sd_uuid:str = None, dst_ovirt_golden_vm_uuid:str = None):
         """
         Восстановление привязанного базового сервиса"
         """
@@ -58,7 +66,11 @@ class ServiceProvider:
                 existing_id = self.__check_if_base_service_exist(legacy_base_service)
                 if existing_id is None:
                     print(f"  \nCreating base service {legacy_base_service.get('name')}")
-                    created_service_id = self.__create_base_service_by_type(legacy_base_service=legacy_base_service)
+                    created_service_id = self.__create_base_service_by_type(
+                    dst_ovirt_cluster_uuid=dst_ovirt_cluster_uuid,
+                    dst_ovirt_sd_uuid=dst_ovirt_sd_uuid,
+                    dst_ovirt_golden_vm_uuid=dst_ovirt_golden_vm_uuid,
+                    legacy_base_service=legacy_base_service)
                 else:
                     print(f'  This base service is already exist with id: {existing_id}, old id is {legacy_base_service.get("id")}')
                     created_service_id = existing_id
@@ -133,7 +145,7 @@ class ServiceProvider:
             print(f'  Unsupported provider type: {provider_type}, skipping...')
         return created_provider.get('id')
 
-    def __create_base_service_by_type(self, legacy_base_service:dict):
+    def __create_base_service_by_type(self,  dst_ovirt_cluster_uuid, dst_ovirt_sd_uuid, dst_ovirt_golden_vm_uuid, legacy_base_service:dict):
         SUPPORTED_TYPES = {'IPMachinesService','oVirtLinkedService','oVirtFixedService'}
         base_service_type = legacy_base_service.get('type')
         created_provider_id = self.__old_to_new_ids_match_dict.get(self.data_dict.get('id'))
@@ -159,6 +171,13 @@ class ServiceProvider:
                     created_base_service = self.__secondary_broker_connection.create_ovirtfixed_service(provider_id=created_provider_id, **base_service_copy)
                 
                 elif base_service_type == 'oVirtLinkedService':
+                    if dst_ovirt_cluster_uuid:
+                        base_service_copy.update({"cluster":dst_ovirt_cluster_uuid})
+                    if dst_ovirt_sd_uuid:
+                        base_service_copy.update({"datastore":dst_ovirt_sd_uuid})
+                    if dst_ovirt_golden_vm_uuid:
+                        base_service_copy.update({"machine":dst_ovirt_golden_vm_uuid})
+                    print(f"    Creating with params: {base_service_copy}")
                     created_base_service = self.__secondary_broker_connection.create_ovirtlinked_service(provider_id=created_provider_id, **base_service_copy)  
                 
                 base_services_list = self.__secondary_broker_connection.list_provider_services(created_provider_id)
